@@ -1,66 +1,100 @@
 ﻿using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MyToDoList1
 {
-    internal class CommandValidator
+    internal class StringParser
     {
-        private string command;
-
-        private List<string> valid_commands = new List<string>()
+        private List<string> words;
+        public StringParser(string input)
         {
-            "/add", "/all", "/delete",
-            "/save", "/load", "/complete",
-            "/completed", "/create-group", "/delete-group",
-            "/add-to-group", "/delete-from-group", 
-            "/add-subtask" 
-        };
-        public CommandValidator(string text)
-        {
-            if (valid_commands.Contains(text))
-            {
-                command = text;
-            }
-            else
-            {
-                command = "no command";
-            }
+            words = new List<string>(input.Split());
         }
-        string GetResult()
+
+        public List<string> GetList()
         {
-            return command;
+            return words;
+        }
+
+        public static bool Parseid(string str, out int ID)
+        {
+            bool isParsable = Int32.TryParse(str, out ID);
+
+            return isParsable;
         }
     }
 
     internal class CommandExecutor
     {
         private List<string> tasks = new List<string>();
-        private string command;
-        private string argument_command;
-        public CommandExecutor(string word1, string word2)
+        private List<string> list = new List<string>();
+        
+        public void SetList(StringParser stringParser)
         {
-            command = word1;
-            argument_command = word2;
+            list = stringParser.GetList();
         }
 
         public void Execute()
         {
-            if (command == "/add")
+            if (list[0] == "/add")
             {
-                AddtTask();    
+                if (list.Count == 2)
+                {
+                    AddTask();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
+            }
+            
+            else if (list[0] == "/all")
+            {
+                WriteAllTasks();
+            }
+
+            else if (list[0] == "/delete")
+            {
+                DeleteTask();
+            }
+
+            else
+            {
+                BadCommandFormat();
             }
         }
 
-        private void AddtTask()
+        private void AddTask()
         {
-            tasks.Add(argument_command);
+            tasks.Add(list[1]);
+        }
+
+        private void WriteAllTasks()
+        {
+            Console.WriteLine("Name of the task, id");
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                Console.WriteLine(tasks[i] + ", " + Convert.ToString(i));
+            }
+        }
+
+        private void DeleteTask()
+        {
+            int ID = -1;
+            if (StringParser.Parseid(list[1], out ID))
+            {
+                // Console.WriteLine(ID);
+                tasks.RemoveAt(ID);
+            }
+            else
+            {
+                Console.WriteLine("Could note be parsed");
+            }
         }
         
         private void BadCommandFormat()
         {
-            Console.WriteLine("Please, enter correct command\n");
+            Console.WriteLine("Please, enter correct command name");
         }
     }
     
@@ -70,18 +104,14 @@ namespace MyToDoList1
         {
             string str;
             str = Console.ReadLine();
-            List<string> words = new List<string>();
+            StringParser stringParser = new StringParser(str);
+            CommandExecutor commandExecutor = new CommandExecutor();
             while (str != "exit")
             {
-                words = new List<string>(str.Split());
-                CommandValidator commandValidator = new CommandValidator(words[0]);
-                // if (words.Count == 3)
-                // {
-                //     words[1] = words[1] + " " + words[2];
-                // }
-                CommandExecutor commandExecutor = new CommandExecutor(words[0], words[1]);
+                commandExecutor.SetList(stringParser);
                 commandExecutor.Execute();
                 str = Console.ReadLine();
+                stringParser = new StringParser(str);
             }
         }
     }
