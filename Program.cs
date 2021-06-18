@@ -25,22 +25,93 @@ namespace MyToDoList1
         }
     }
 
+    internal class Group
+    {
+        private List<string> _tasks = new List<string>();
+        private List<string> _completed = new List<string>();
+        private string _name;
+
+        public Group(string name)
+        {
+            SetName(name);
+        }
+        public void SetName(string name)
+        {
+            _name = name;
+        }
+
+        public string Name()
+        {
+            return _name;
+        }
+
+        public void AddItem(string task)
+        {
+            _tasks.Add(task);
+        }
+
+        public void DeleteItem(int index)
+        {
+            _tasks.RemoveAt(index);
+        }
+
+        public void Completed()
+        {
+            foreach (var task in _completed)
+            {
+                Console.WriteLine(task);
+            }
+        }
+
+        public void Tasks()
+        {
+            Console.WriteLine(_name);
+            foreach (var task in _tasks)
+            {
+                Console.WriteLine("  " + task);
+            }
+        }
+        
+    }
+
+    internal class Task
+    {
+        private string Name {
+            get;
+            set;
+        }
+        private string Date {
+            get;
+            set;
+        }
+        private int ID {
+            get;
+            set;
+        }
+        private bool Completed {
+            get;
+            set;
+        }
+    }
+
     internal class CommandExecutor
     {
-        private List<string> tasks = new List<string>();
-        private List<string> list = new List<string>();
-        private List<string> completed = new List<string>();
+        private List<string> _tasks = new List<string>();
+        private List<string> _list = new List<string>();
+        private List<string> _completed = new List<string>();
+        
+        private List<Group> _groups = new List<Group>();
         
         public void SetList(StringParser stringParser)
         {
-            list = stringParser.GetList();
+            _list = stringParser.GetList();
         }
 
         public void Execute()
         {
-            if (list[0] == "/add")
+            if (_list[0] == "/add")
             {
-                if (list.Count == 2)
+                if (_list.Count == 2)
                 {
                     AddTask();
                 }
@@ -50,9 +121,9 @@ namespace MyToDoList1
                 }
             }
             
-            else if (list[0] == "/all")
+            else if (_list[0] == "/all")
             {
-                if (list.Count == 1)
+                if (_list.Count == 1)
                 {
                     WriteAllTasks();
                 }
@@ -62,9 +133,9 @@ namespace MyToDoList1
                 }
             }
 
-            else if (list[0] == "/delete")
+            else if (_list[0] == "/delete")
             {
-                if (list.Count == 2)
+                if (_list.Count == 2)
                 {
                     DeleteTask();
                 }
@@ -74,9 +145,9 @@ namespace MyToDoList1
                 }
             }
             
-            else if (list[0] == "/load")
+            else if (_list[0] == "/load")
             {
-                if (list.Count == 2)
+                if (_list.Count == 2)
                 {
                     LoadTaskFromFile();
                 }
@@ -85,9 +156,9 @@ namespace MyToDoList1
                     BadCommandFormat();
                 }
             }
-            else if (list[0] == "/save")
+            else if (_list[0] == "/save")
             {
-                if (list.Count == 2)
+                if (_list.Count == 2)
                 {
                     SaveTaskToFile();
                 }
@@ -97,9 +168,9 @@ namespace MyToDoList1
                 }
             }
             
-            else if (list[0] == "/complete")
+            else if (_list[0] == "/complete")
             {
-                if (list.Count == 2)
+                if (_list.Count == 2)
                 {
                     Complete();
                 }
@@ -109,9 +180,9 @@ namespace MyToDoList1
                 }
             }
             
-            else if (list[0] == "/time")
+            else if (_list[0] == "/time")
             {
-                if (list.Count == 3)
+                if (_list.Count == 3)
                 {
                     AddTimeLimitToTask();
                 }
@@ -121,9 +192,80 @@ namespace MyToDoList1
                 }
             }
             
-            else if (list[0] == "/today")
+            else if (_list[0] == "/today")
             {
-                TasksForToday();
+                if (_list.Count == 3)
+                {
+                    TasksForToday();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
+            }
+
+            else if (_list[0] == "/create-group")
+            {
+                if (_list.Count == 2)
+                {
+                    CreateGroup();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
+            }
+            
+            else if (_list[0] == "/delete-group")
+            {
+                if (_list.Count == 2)
+                {
+                    DeleteGroup();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
+            }
+            
+            else if (_list[0] == "/add-to-group")
+            {
+                if (_list.Count == 3)
+                {
+                    AddItemToGroup();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
+            }
+            
+            else if (_list[0] == "/delete-from-group")
+            {
+                if (_list.Count == 3)
+                {
+                    DeleteItemFromGroup();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
+            }
+            
+            else if (_list[0] == "/completed")
+            {
+                if (_list.Count == 2)
+                {
+                    GroupCompleted();
+                }
+                else if (_list.Count == 1)
+                {
+                    WriteAllCompleted();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
             }
 
             else
@@ -134,18 +276,22 @@ namespace MyToDoList1
 
         private void AddTask()
         {
-            tasks.Add(list[1]);
+            _tasks.Add(_list[1]);
         }
 
         private void WriteAllTasks()
         {
             Console.WriteLine("Name of the task, id");
-            for (int i = 0; i < tasks.Count; i++)
+            for (int i = 0; i < _tasks.Count; i++)
             {
-                Console.WriteLine(tasks[i] + ", " + Convert.ToString(i));
+                Console.WriteLine(_tasks[i] + ", " + Convert.ToString(i));
+            }
+            foreach (var group in _groups)
+            {
+                group.Tasks();
             }
             Console.WriteLine("Completed task:");
-            foreach (var task in completed)
+            foreach (var task in _completed)
             {
                 Console.WriteLine(task);
             }
@@ -154,9 +300,9 @@ namespace MyToDoList1
         private void DeleteTask()
         {
             int ID = -1;
-            if (StringParser.Parseid(list[1], out ID))
+            if (StringParser.Parseid(_list[1], out ID))
             {
-                tasks.RemoveAt(ID);
+                _tasks.RemoveAt(ID);
             }
             else
             {
@@ -166,12 +312,12 @@ namespace MyToDoList1
 
         private void LoadTaskFromFile()
         {
-            if (File.Exists(list[1]))
+            if (File.Exists(_list[1]))
             {
-                string[] fileTasks = File.ReadAllLines(list[1]);
+                string[] fileTasks = File.ReadAllLines(_list[1]);
                 foreach (var task in fileTasks)
                 {
-                    tasks.Add(task);
+                    _tasks.Add(task);
                 }
             }
             else
@@ -182,16 +328,16 @@ namespace MyToDoList1
 
         private void SaveTaskToFile()
         {
-            File.WriteAllLines(list[1], tasks);
+            File.WriteAllLines(_list[1], _tasks);
         }
 
         private void Complete()
         {
             int ID = -1;
-            if (StringParser.Parseid(list[1], out ID))
+            if (StringParser.Parseid(_list[1], out ID))
             {
-                completed.Add(list[ID]);
-                tasks.RemoveAt(ID);
+                _completed.Add(_list[ID]);
+                _tasks.RemoveAt(ID);
             }
             else
             {
@@ -201,7 +347,7 @@ namespace MyToDoList1
 
         private void WriteAllCompleted()
         {
-            foreach (var task in completed)
+            foreach (var task in _completed)
             {
                 Console.WriteLine(task);
             }
@@ -211,9 +357,9 @@ namespace MyToDoList1
         {
             Console.WriteLine("Please, enter the time in date format: MM.dd.yyyy");
             int ID = -1;
-            if (StringParser.Parseid(list[1], out ID))
+            if (StringParser.Parseid(_list[1], out ID))
             {
-                tasks[ID] += " " + list[2];
+                _tasks[ID] += " " + _list[2];
             }
             else
             {
@@ -223,9 +369,8 @@ namespace MyToDoList1
 
         private void TasksForToday()
         {
-            foreach (var task in tasks)
+            foreach (var task in _tasks)
             {
-                
                 List<string> words = new StringParser(task).GetList();
                 string dateToday = DateTime.Now.ToString("MM.dd.yyyy");
                 if (words.Count == 2)
@@ -235,7 +380,71 @@ namespace MyToDoList1
                         Console.WriteLine(words[0]);
                     }
                 }
-                
+            }
+        }
+
+        private void CreateGroup()
+        {
+            _groups.Add(new Group(_list[1]));
+        }
+
+        private void DeleteGroup()
+        {
+            for (int i = 0; i < _groups.Count; i++)
+            {
+                if (_groups[i].Name() == _list[1])
+                {
+                    _groups.RemoveAt(i);
+                }
+            }
+        }
+
+        private void AddItemToGroup()
+        {
+            foreach (var @group in _groups)
+            {
+                if (group.Name() == _list[2])
+                {
+                    int ID = -1;
+                    if (StringParser.Parseid(_list[1], out ID))
+                    {
+                        group.AddItem(_tasks[ID]);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Could note be parsed by id");
+                    }
+                }
+            }
+        }
+
+        private void DeleteItemFromGroup()
+        {
+            foreach (var group in _groups)
+            {
+                if (group.Name() == _list[2])
+                {
+                    int ID = -1;
+                    if (StringParser.Parseid(_list[1], out ID))
+                    {
+                        group.DeleteItem(ID);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Could note be parsed by id");
+                    }
+                }
+            }
+        }
+
+        private void GroupCompleted()
+        {
+            foreach (var group in _groups)
+            {
+                if (group.Name() == _list[1])
+                {
+                    group.Completed();
+                }
             }
         }
         
