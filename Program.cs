@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace MyToDoList1
 {
@@ -28,6 +29,7 @@ namespace MyToDoList1
     {
         private List<string> tasks = new List<string>();
         private List<string> list = new List<string>();
+        private List<string> completed = new List<string>();
         
         public void SetList(StringParser stringParser)
         {
@@ -50,12 +52,78 @@ namespace MyToDoList1
             
             else if (list[0] == "/all")
             {
-                WriteAllTasks();
+                if (list.Count == 1)
+                {
+                    WriteAllTasks();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
             }
 
             else if (list[0] == "/delete")
             {
-                DeleteTask();
+                if (list.Count == 2)
+                {
+                    DeleteTask();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
+            }
+            
+            else if (list[0] == "/load")
+            {
+                if (list.Count == 2)
+                {
+                    LoadTaskFromFile();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
+            }
+            else if (list[0] == "/save")
+            {
+                if (list.Count == 2)
+                {
+                    SaveTaskToFile();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
+            }
+            
+            else if (list[0] == "/complete")
+            {
+                if (list.Count == 2)
+                {
+                    Complete();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
+            }
+            
+            else if (list[0] == "/time")
+            {
+                if (list.Count == 3)
+                {
+                    AddTimeLimitToTask();
+                }
+                else
+                {
+                    BadCommandFormat();
+                }
+            }
+            
+            else if (list[0] == "/today")
+            {
+                TasksForToday();
             }
 
             else
@@ -76,19 +144,98 @@ namespace MyToDoList1
             {
                 Console.WriteLine(tasks[i] + ", " + Convert.ToString(i));
             }
+            Console.WriteLine("Completed task:");
+            foreach (var task in completed)
+            {
+                Console.WriteLine(task);
+            }
         }
-
+        
         private void DeleteTask()
         {
             int ID = -1;
             if (StringParser.Parseid(list[1], out ID))
             {
-                // Console.WriteLine(ID);
                 tasks.RemoveAt(ID);
             }
             else
             {
                 Console.WriteLine("Could note be parsed");
+            }
+        }
+
+        private void LoadTaskFromFile()
+        {
+            if (File.Exists(list[1]))
+            {
+                string[] fileTasks = File.ReadAllLines(list[1]);
+                foreach (var task in fileTasks)
+                {
+                    tasks.Add(task);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Could not find this file");
+            }
+        }
+
+        private void SaveTaskToFile()
+        {
+            File.WriteAllLines(list[1], tasks);
+        }
+
+        private void Complete()
+        {
+            int ID = -1;
+            if (StringParser.Parseid(list[1], out ID))
+            {
+                completed.Add(list[ID]);
+                tasks.RemoveAt(ID);
+            }
+            else
+            {
+                Console.WriteLine("Could note be parsed by id");
+            }
+        }
+
+        private void WriteAllCompleted()
+        {
+            foreach (var task in completed)
+            {
+                Console.WriteLine(task);
+            }
+        }
+
+        private void AddTimeLimitToTask()
+        {
+            Console.WriteLine("Please, enter the time in date format: MM.dd.yyyy");
+            int ID = -1;
+            if (StringParser.Parseid(list[1], out ID))
+            {
+                tasks[ID] += " " + list[2];
+            }
+            else
+            {
+                Console.WriteLine("Could note be parsed by id");
+            }
+        }
+
+        private void TasksForToday()
+        {
+            foreach (var task in tasks)
+            {
+                
+                List<string> words = new StringParser(task).GetList();
+                string dateToday = DateTime.Now.ToString("MM.dd.yyyy");
+                if (words.Count == 2)
+                {
+                    if (words[1] == dateToday)
+                    {
+                        Console.WriteLine(words[0]);
+                    }
+                }
+                
             }
         }
         
