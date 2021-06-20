@@ -39,11 +39,7 @@ namespace MyToDoList1
             get;
             set;
         }
-        public bool Completed {
-            get;
-            set;
-        }
-    
+
         public static int GetindexTaskByid(List<Task> _tasks, int ID)
         {
             int index = -1; 
@@ -106,6 +102,20 @@ namespace MyToDoList1
                 Console.WriteLine("  " + task.Name + " " + Convert.ToString(task.ID) + " " + task.Date);
             }
         }
+
+        public static int FindIndexByName(List<Group> _groups, string name)
+        {
+            int index = -1;
+            for (int i = 0; i < _groups.Count; i++)
+            {
+                if (_groups[i].Name == name)
+                {
+                    index = i;
+                }
+            }
+
+            return index;
+        }
         
     }
     
@@ -117,7 +127,14 @@ namespace MyToDoList1
 
         private List<Group> _groups = new List<Group>();
 
-        public static int counter = 0;
+        private static int _counter;
+
+        public CommandExecutor()
+        {
+            var group = new Group();
+            group.Name = "Tasks (without group)";
+            _groups.Add(group);
+        }
         
         public void SetList(StringParser stringParser)
         {
@@ -293,21 +310,22 @@ namespace MyToDoList1
 
         private void AddTask()
         {
-            Task task = new Task();
-            task.Name = _list[1];
-            task.ID = counter++;
-            task.Date = "";
-            task.Completed = false;
-            _tasks.Add(task);
+            var task = new Task
+            {
+                Name = _list[1],
+                ID = _counter++,
+                Date = "",
+            };
+            int index = Group.FindIndexByName(_groups, "Tasks (without group)");
+            if (index != -1)
+            {
+                _groups[index].AddItem(task);
+            }
         }
 
         private void WriteAllTasks()
         {
-            Console.WriteLine("Name of the task, id");
-            foreach (var task in _tasks)
-            {
-                Console.WriteLine(task.Name + " " + task.ID + " " + task.Date);
-            }
+            Console.WriteLine("Format: Name of the task, id, date");
             foreach (var group in _groups)
             {
                 group.Tasks();
@@ -328,12 +346,10 @@ namespace MyToDoList1
             int ID = -1;
             if (StringParser.Parseid(_list[1], out ID))
             {
-                for (int i = 0; i < _tasks.Count; i++)
+                int index = Group.FindIndexByName(_groups, "Tasks (without group)");
+                if (index != -1)
                 {
-                    if (ID == _tasks[i].ID)
-                    {
-                        _tasks.RemoveAt(i);
-                    }
+                    _groups[index].DeleteItem(ID);
                 }
             }
             else
@@ -361,7 +377,6 @@ namespace MyToDoList1
                     {
                         Console.WriteLine("Could not be parsed by id");
                     }
-                    task.Completed = false;
                     if (words.Count == 3)
                     {
                         task.Date = words[2];
@@ -394,12 +409,7 @@ namespace MyToDoList1
             int ID = -1;
             if (StringParser.Parseid(_list[1], out ID))
             {
-                int index = Task.GetindexTaskByid(_tasks, ID);
-                if (index != -1)
-                {
-                    _completed.Add(_tasks[index].Name);
-                    _tasks.RemoveAt(index);
-                }
+                int index = -1;
                 foreach (var group in _groups)
                 {
                     index = Task.GetindexTaskByid(group.GetTasks(), ID);
@@ -435,13 +445,12 @@ namespace MyToDoList1
             int ID = -1;
             if (StringParser.Parseid(_list[1], out ID))
             {
-                for (int i = 0; i < _tasks.Count; i++)
+                int index = -1;
+                foreach (var group in _groups)
                 {
-                    if (_tasks[i].ID == ID)
-                    {
-                        _tasks[i].Date = _list[2];
-                    }
+                    index = Task.GetindexTaskByid(group.GetTasks(), ID);
                 }
+                _tasks[index].Date = _list[2];
             }
             else
             {
@@ -451,19 +460,32 @@ namespace MyToDoList1
 
         private void TasksForToday()
         {
-            foreach (var task in _tasks)
+            string dateToday = DateTime.Now.ToString("MM.dd.yyyy");
+            string TaskName = "";
+            foreach (var group in _groups)
             {
-                string dateToday = DateTime.Now.ToString("MM.dd.yyyy");
-                if (task.Date == dateToday)
+                foreach (var task in group.GetTasks())
                 {
-                    Console.WriteLine(task.Name);
+                    if (task.Date == dateToday)
+                    {
+                        TaskName = task.Name;
+                    }
                 }
+            }
+
+            if (TaskName != "")
+            {
+                Console.WriteLine(TaskName);
+            }
+            else
+            {
+                Console.WriteLine("Today you're chilling");
             }
         }
 
         private void CreateGroup()
         {
-            Group group = new Group();
+            var group = new Group();
             group.Name = _list[1];
             _groups.Add(group);
         }
@@ -481,18 +503,21 @@ namespace MyToDoList1
 
         private void AddItemToGroup()
         {
-            foreach (var @group in _groups)
+            foreach (var group in _groups)
             {
                 if (group.Name == _list[2])
                 {
                     int ID = -1;
                     if (StringParser.Parseid(_list[1], out ID))
                     {
-                        int index = Task.GetindexTaskByid(_tasks, ID);
+                        //Add support to find tasks in default(not in _tasks)
+                        int IndexGroupDefault = Group.FindIndexByName(_groups, "Tasks (without group)");
+                        Group GroupDefault = _groups[IndexGroupDefault];
+                        int index = Task.GetindexTaskByid(GroupDefault.GetTasks(), ID);
                         if (index != -1)
                         {
-                            group.AddItem(_tasks[index]);
-                            _tasks.RemoveAt(index);
+                            group.AddItem(GroupDefault.GetTasks()[index]);
+                            GroupDefault.GetTasks().RemoveAt(index);
                         }
                         else
                         {
