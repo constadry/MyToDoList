@@ -121,7 +121,6 @@ namespace MyToDoList1
     
     internal class CommandExecutor
     {
-        private List<Task> _tasks = new List<Task>();
         private List<string> _list = new List<string>();
         private List<string> _completed = new List<string>();
 
@@ -132,7 +131,7 @@ namespace MyToDoList1
         public CommandExecutor()
         {
             var group = new Group();
-            group.Name = "Tasks (without group)";
+            group.Name = "Tasks";
             _groups.Add(group);
         }
         
@@ -242,7 +241,7 @@ namespace MyToDoList1
             {
                 if (_list.Count == 2)
                 {
-                    CreateGroup();
+                    CreateGroup(_list[1]);
                 }
                 else
                 {
@@ -316,7 +315,7 @@ namespace MyToDoList1
                 ID = _counter++,
                 Date = "",
             };
-            int index = Group.FindIndexByName(_groups, "Tasks (without group)");
+            int index = Group.FindIndexByName(_groups, "Tasks");
             if (index != -1)
             {
                 _groups[index].AddItem(task);
@@ -346,7 +345,7 @@ namespace MyToDoList1
             int ID = -1;
             if (StringParser.Parseid(_list[1], out ID))
             {
-                int index = Group.FindIndexByName(_groups, "Tasks (without group)");
+                int index = Group.FindIndexByName(_groups, "Tasks");
                 if (index != -1)
                 {
                     _groups[index].DeleteItem(ID);
@@ -358,34 +357,53 @@ namespace MyToDoList1
             }
         }
 
+        private int LoadGroup(string NameGroup)
+        {
+            int IndexGroup = Group.FindIndexByName(_groups, NameGroup);
+            if (IndexGroup == -1)
+            {
+                CreateGroup(NameGroup);
+                IndexGroup = _groups.Count - 1;
+            }
+
+            return IndexGroup;
+        }
+
         private void LoadTaskFromFile()
         {
             if (File.Exists(_list[1]))
             {
+                int IndexGroup = -1;
                 string[] fileTasks = File.ReadAllLines(_list[1]);
                 foreach (var line in fileTasks)
                 {
                     List<string> words = new StringParser(line).GetList();
-                    Task task = new Task();
-                    task.Name = words[0];
-                    int ID = -1;
-                    if (StringParser.Parseid(words[1], out ID))
+                    if (words.Count == 1)
                     {
-                        task.ID = ID;
+                        IndexGroup = LoadGroup(words[0]);
                     }
                     else
                     {
-                        Console.WriteLine("Could not be parsed by id");
+                        var task = new Task {Name = words[0]};
+                        int ID = -1;
+                        if (StringParser.Parseid(words[1], out ID))
+                        {
+                            task.ID = ID;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Could not be parsed by id");
+                        }
+                        if (words.Count == 3)
+                        {
+                            task.Date = words[2];
+                        }
+                        else
+                        {
+                            task.Date = "";
+                        }
+                        _groups[IndexGroup].AddItem(task);
                     }
-                    if (words.Count == 3)
-                    {
-                        task.Date = words[2];
-                    }
-                    else
-                    {
-                        task.Date = "";
-                    }
-                    _tasks.Add(task);
                 }
             }
             else
@@ -397,9 +415,14 @@ namespace MyToDoList1
         private void SaveTaskToFile()
         {
             List<string> lines = new List<string>();
-            foreach (var task in _tasks)
+            foreach (var group in _groups)
             {
-                lines.Add(task.Name + " " + Convert.ToString(task.ID) + " " + task.Date);
+                lines.Add(group.Name);
+                foreach (var task in group.GetTasks())
+                {
+                    lines.Add(task.Name + " " + Convert.ToString(task.ID) + " " + task.Date);
+                }
+                
             }
             File.WriteAllLines(_list[1], lines);
         }
@@ -449,8 +472,16 @@ namespace MyToDoList1
                 foreach (var group in _groups)
                 {
                     index = Task.GetindexTaskByid(group.GetTasks(), ID);
+                    if (index != -1)
+                    {
+                        group.GetTasks()[index].Date = _list[2];
+                    }
                 }
-                _tasks[index].Date = _list[2];
+
+                if (index == -1)
+                {
+                    Console.WriteLine("Could not find element by ID:", ID);
+                }
             }
             else
             {
@@ -483,10 +514,10 @@ namespace MyToDoList1
             }
         }
 
-        private void CreateGroup()
+        private void CreateGroup(string name)
         {
             var group = new Group();
-            group.Name = _list[1];
+            group.Name = name;
             _groups.Add(group);
         }
 
@@ -510,8 +541,7 @@ namespace MyToDoList1
                     int ID = -1;
                     if (StringParser.Parseid(_list[1], out ID))
                     {
-                        //Add support to find tasks in default(not in _tasks)
-                        int IndexGroupDefault = Group.FindIndexByName(_groups, "Tasks (without group)");
+                        int IndexGroupDefault = Group.FindIndexByName(_groups, "Tasks");
                         Group GroupDefault = _groups[IndexGroupDefault];
                         int index = Task.GetindexTaskByid(GroupDefault.GetTasks(), ID);
                         if (index != -1)
