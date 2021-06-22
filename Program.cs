@@ -6,20 +6,24 @@ namespace MyToDoList1
 {
     internal class StringParser
     {
-        private List<string> words;
+        private readonly List<string> _words;
         public StringParser(string input)
         {
-            words = new List<string>(input.Split());
+            _words = new List<string>(input.Split());
         }
 
         public List<string> GetList()
         {
-            return words;
+            return _words;
         }
 
-        public static bool Parseid(string str, out int ID)
+        public static bool ParseId(string str, out int id)
         {
-            bool isParsable = Int32.TryParse(str, out ID);
+            var isParsable = int.TryParse(str, out id);
+            if (!isParsable)
+            {
+                id = -1;
+            }
 
             return isParsable;
         }
@@ -27,40 +31,34 @@ namespace MyToDoList1
     
     internal class Task
     {
-        public string Name {
-            get;
-            set;
-        }
-        public string Date {
-            get;
-            set;
-        }
-        public int ID {
-            get;
-            set;
-        }
+        public string Name { get; set; }
+        public string Date { get; set; }
+        public int Id { get; set; }
 
-        public static int GetindexTaskByid(List<Task> _tasks, int ID)
+        public static int GetIndexTaskById(List<Task> tasks, int id)
         {
-            int index = -1; 
-            for (int i = 0; i < _tasks.Count; i++)
+            var index = -1; 
+            for (var i = 0; i < tasks.Count; i++)
             {
-                if (ID == _tasks[i].ID)
+                if (id == tasks[i].Id)
                 {
                     index = i;
                 }
             }
 
             return index;
-        } 
+        }
+
+        public static void BadIndex(int id)
+        {
+            Console.WriteLine("Could not find element by id {0}", id);
+        }
     }
-    
-    
     
     internal class Group
     {
-        private List<Task> _tasks = new List<Task>();
-        private List<string> _completed = new List<string>();
+        private readonly List<Task> _tasks = new List<Task>();
+        private readonly List<string> _completed = new List<string>();
         public string Name { get; set; }
 
         public List<Task> GetTasks()
@@ -73,19 +71,20 @@ namespace MyToDoList1
             _tasks.Add(task);
         }
 
-        public void DeleteItem(int ID)
+        public void DeleteItem(int id)
         {
-            int index = Task.GetindexTaskByid(_tasks, ID);
+            var index = Task.GetIndexTaskById(_tasks, id);
             if (index != -1)
             {
                 _tasks.RemoveAt(index);
             }
-            else
-            {
-                Console.WriteLine("Could not find element by ID:" + ID);
-            }
         }
 
+        public void AddToCompleted(int index)
+        {
+            _completed.Add(_tasks[index].Name);
+        }
+        
         public void Completed()
         {
             foreach (var task in _completed)
@@ -99,16 +98,16 @@ namespace MyToDoList1
             Console.WriteLine(Name + ":");
             foreach (var task in _tasks)
             {
-                Console.WriteLine("  " + task.Name + " " + Convert.ToString(task.ID) + " " + task.Date);
+                Console.WriteLine("  {0} {1} {2}", task.Name, Convert.ToString(task.Id), task.Date);
             }
         }
 
-        public static int FindIndexByName(List<Group> _groups, string name)
+        public static int FindIndexByName(List<Group> groups, string name)
         {
-            int index = -1;
-            for (int i = 0; i < _groups.Count; i++)
+            var index = -1;
+            for (var i = 0; i < groups.Count; i++)
             {
-                if (_groups[i].Name == name)
+                if (groups[i].Name == name)
                 {
                     index = i;
                 }
@@ -116,17 +115,18 @@ namespace MyToDoList1
 
             return index;
         }
-        
+
+        public static void BadName(string name)
+        {
+            Console.WriteLine("Could not find group by name: {0}", name);
+        }
     }
     
     internal class CommandExecutor
     {
         private List<string> _list = new List<string>();
-        private List<string> _completed = new List<string>();
-
-        private List<Group> _groups = new List<Group>();
-
-        private static int _counter;
+        private readonly List<string> _completed = new List<string>();
+        private readonly List<Group> _groups = new List<Group>();
 
         public CommandExecutor()
         {
@@ -227,7 +227,7 @@ namespace MyToDoList1
             
             else if (_list[0] == "/today")
             {
-                if (_list.Count == 3)
+                if (_list.Count == 1)
                 {
                     TasksForToday();
                 }
@@ -287,17 +287,17 @@ namespace MyToDoList1
             
             else if (_list[0] == "/completed")
             {
-                if (_list.Count == 2)
+                switch (_list.Count)
                 {
-                    GroupCompleted();
-                }
-                else if (_list.Count == 1)
-                {
-                    WriteAllCompleted();
-                }
-                else
-                {
-                    BadCommandFormat();
+                    case 2:
+                        GroupCompleted();
+                        break;
+                    case 1:
+                        WriteAllCompleted();
+                        break;
+                    default:
+                        BadCommandFormat();
+                        break;
                 }
             }
 
@@ -312,10 +312,10 @@ namespace MyToDoList1
             var task = new Task
             {
                 Name = _list[1],
-                ID = _counter++,
+                Id = _list[1].GetHashCode(),
                 Date = "",
             };
-            int index = Group.FindIndexByName(_groups, "Tasks");
+            var index = Group.FindIndexByName(_groups, "Tasks");
             if (index != -1)
             {
                 _groups[index].AddItem(task);
@@ -342,67 +342,58 @@ namespace MyToDoList1
         
         private void DeleteTask()
         {
-            int ID = -1;
-            if (StringParser.Parseid(_list[1], out ID))
+            if (StringParser.ParseId(_list[1], out var id))
             {
-                int index = Group.FindIndexByName(_groups, "Tasks");
+                var index = Group.FindIndexByName(_groups, "Tasks");
                 if (index != -1)
                 {
-                    _groups[index].DeleteItem(ID);
+                    _groups[index].DeleteItem(id);
                 }
             }
             else
             {
-                Console.WriteLine("Could not be parsed");
+                BadId(id);
             }
         }
 
-        private int LoadGroup(string NameGroup)
+        private int LoadGroup(string nameGroup)
         {
-            int IndexGroup = Group.FindIndexByName(_groups, NameGroup);
-            if (IndexGroup == -1)
+            var indexGroup = Group.FindIndexByName(_groups, nameGroup);
+            if (indexGroup == -1)
             {
-                CreateGroup(NameGroup);
-                IndexGroup = _groups.Count - 1;
+                CreateGroup(nameGroup);
+                indexGroup = _groups.Count - 1;
             }
 
-            return IndexGroup;
+            return indexGroup;
         }
 
         private void LoadTaskFromFile()
         {
             if (File.Exists(_list[1]))
             {
-                int IndexGroup = -1;
+                var indexGroup = -1;
                 string[] fileTasks = File.ReadAllLines(_list[1]);
                 foreach (var line in fileTasks)
                 {
-                    List<string> words = new StringParser(line).GetList();
+                    var words = new StringParser(line).GetList();
                     if (words.Count == 1)
                     {
-                        IndexGroup = LoadGroup(words[0]);
+                        indexGroup = LoadGroup(words[0]);
                     }
                     else
                     {
                         var task = new Task {Name = words[0]};
-                        int ID = -1;
-                        if (StringParser.Parseid(words[1], out ID))
+                        if (StringParser.ParseId(words[1], out var id))
                         {
-                            task.ID = ID;
+                            task.Id = id;
                         }
                         else
                         {
-                            Console.WriteLine("Could not be parsed by id");
+                            BadId(id);
                         }
-                        if (words.Count == 3)
-                        {
-                            task.Date = words[2];
-                        }
-                        else
-                        {
-                            task.Date = "";
-                        }
-                        _groups[IndexGroup].AddItem(task);
+                        task.Date = words.Count == 3 ? words[2] : "";
+                        _groups[indexGroup].AddItem(task);
                     }
                 }
             }
@@ -420,37 +411,29 @@ namespace MyToDoList1
                 lines.Add(group.Name);
                 foreach (var task in group.GetTasks())
                 {
-                    lines.Add(task.Name + " " + Convert.ToString(task.ID) + " " + task.Date);
+                    lines.Add(task.Name + " " + Convert.ToString(task.Id) + " " + task.Date);
                 }
                 
             }
             File.WriteAllLines(_list[1], lines);
         }
-
+        
         private void Complete()
         {
-            int ID = -1;
-            if (StringParser.Parseid(_list[1], out ID))
+            if (StringParser.ParseId(_list[1], out var id))
             {
-                int index = -1;
                 foreach (var group in _groups)
                 {
-                    index = Task.GetindexTaskByid(group.GetTasks(), ID);
-                    if (index != -1)
-                    {
-                        _completed.Add(group.GetTasks()[index].Name);
-                        group.DeleteItem(index);
-                    }
-                }
-                
-                if (index == -1)
-                {
-                    Console.WriteLine("Could not find element by ID:" + ID);
+                    var index = Task.GetIndexTaskById(@group.GetTasks(), id);
+                    if (index == -1) continue;
+                    _completed.Add(@group.GetTasks()[index].Name);
+                    @group.AddToCompleted(index);
+                    @group.DeleteItem(id);
                 }
             }
             else
             {
-                Console.WriteLine("Could not be parsed by id");
+                BadId(id);
             }
         }
 
@@ -464,54 +447,37 @@ namespace MyToDoList1
 
         private void AddTimeLimitToTask()
         {
-            Console.WriteLine("Please, enter the time in date format: MM.dd.yyyy");
-            int ID = -1;
-            if (StringParser.Parseid(_list[1], out ID))
+            if (StringParser.ParseId(_list[1], out var id))
             {
-                int index = -1;
                 foreach (var group in _groups)
                 {
-                    index = Task.GetindexTaskByid(group.GetTasks(), ID);
-                    if (index != -1)
-                    {
-                        group.GetTasks()[index].Date = _list[2];
-                    }
-                }
-
-                if (index == -1)
-                {
-                    Console.WriteLine("Could not find element by ID:", ID);
+                    var index = Task.GetIndexTaskById(group.GetTasks(), id);
+                    if (index == -1) continue;
+                    group.GetTasks()[index].Date = _list[2];
                 }
             }
             else
             {
-                Console.WriteLine("Could not be parsed by id");
+                BadId(id);
             }
         }
 
         private void TasksForToday()
         {
-            string dateToday = DateTime.Now.ToString("MM.dd.yyyy");
-            string TaskName = "";
+            var dateToday = DateTime.Now.ToString("MM.dd.yyyy");
+            var taskName = "";
             foreach (var group in _groups)
             {
                 foreach (var task in group.GetTasks())
                 {
                     if (task.Date == dateToday)
                     {
-                        TaskName = task.Name;
+                        taskName = task.Name;
+                        Console.WriteLine(taskName);
                     }
                 }
             }
-
-            if (TaskName != "")
-            {
-                Console.WriteLine(TaskName);
-            }
-            else
-            {
-                Console.WriteLine("Today you're chilling");
-            }
+            if (taskName == "") Console.WriteLine("Today you're chilling");
         }
 
         private void CreateGroup(string name)
@@ -523,42 +489,47 @@ namespace MyToDoList1
 
         private void DeleteGroup()
         {
-            for (int i = 0; i < _groups.Count; i++)
+            var index = Group.FindIndexByName(_groups, _list[1]);
+            if (index != -1)
             {
-                if (_groups[i].Name == _list[1])
-                {
-                    _groups.RemoveAt(i);
-                }
+                _groups.RemoveAt(index);
+            }
+            else
+            {
+                Group.BadName(_list[1]);
             }
         }
 
         private void AddItemToGroup()
         {
-            foreach (var group in _groups)
+            var indexGroup = Group.FindIndexByName(_groups, _list[2]);
+            if (indexGroup != -1)
             {
-                if (group.Name == _list[2])
+                if (StringParser.ParseId(_list[1], out var id))
                 {
-                    int ID = -1;
-                    if (StringParser.Parseid(_list[1], out ID))
+                    Console.WriteLine(id);
+                    var indexGroupDefault = Group.FindIndexByName(_groups, "Tasks");
+                    Console.WriteLine(indexGroupDefault);
+                    var groupDefault = _groups[indexGroupDefault];
+                    var index = Task.GetIndexTaskById(groupDefault.GetTasks(), id);
+                    if (index != -1)
                     {
-                        int IndexGroupDefault = Group.FindIndexByName(_groups, "Tasks");
-                        Group GroupDefault = _groups[IndexGroupDefault];
-                        int index = Task.GetindexTaskByid(GroupDefault.GetTasks(), ID);
-                        if (index != -1)
-                        {
-                            group.AddItem(GroupDefault.GetTasks()[index]);
-                            GroupDefault.GetTasks().RemoveAt(index);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Could not find element by ID:" + ID);
-                        }
+                        _groups[indexGroup].AddItem(groupDefault.GetTasks()[index]);
+                        groupDefault.GetTasks().RemoveAt(index);    
                     }
                     else
                     {
-                        Console.WriteLine("Could not be parsed by id");
+                        Task.BadIndex(id);
                     }
                 }
+                else
+                {
+                    BadId(id);
+                }
+            }
+            else
+            {
+                Group.BadName(_list[1]);
             }
         }
 
@@ -568,14 +539,13 @@ namespace MyToDoList1
             {
                 if (group.Name == _list[2])
                 {
-                    int ID = -1;
-                    if (StringParser.Parseid(_list[1], out ID))
+                    if (StringParser.ParseId(_list[1], out var id))
                     {
-                        group.DeleteItem(ID);
+                        group.DeleteItem(id);
                     }
                     else
                     {
-                        Console.WriteLine("Could not be parsed by id");
+                        BadId(id);
                     }
                 }
             }
@@ -592,26 +562,36 @@ namespace MyToDoList1
             }
         }
         
-        private void BadCommandFormat()
+        private static void BadCommandFormat()
         {
             Console.WriteLine("Please, enter correct command name");
         }
+
+        private static void BadId(int id)
+        {
+            Console.WriteLine("Could not be parsed by id: {0}", id);
+        } 
     }
     
-    internal class Program
+    internal static class Program
     {
-        public static void Main(string[] args)
+        private static void AboutTime()
         {
-            string str;
-            str = Console.ReadLine();
-            StringParser stringParser = new StringParser(str);
+            Console.WriteLine("Write /time id date, to add deadline to the task");
+            Console.WriteLine("Date format: MM.dd.yyyy");
+        }
+        public static void Main()
+        {
+            AboutTime();
+            var input = Console.ReadLine();
+            StringParser stringParser = new StringParser(input);
             CommandExecutor commandExecutor = new CommandExecutor();
-            while (str != "exit")
+            while (input != "/exit")
             {
                 commandExecutor.SetList(stringParser);
                 commandExecutor.Execute();
-                str = Console.ReadLine();
-                stringParser = new StringParser(str);
+                input = Console.ReadLine();
+                stringParser = new StringParser(input);
             }
         }
     }
