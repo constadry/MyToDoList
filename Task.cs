@@ -9,7 +9,6 @@ namespace MyToDoList1
         public string Name { get; set; }
         public string Date { get; set; }
         public int Id { get; set; }
-        
         public int CountCompleted { get; set; }
 
         private readonly List<Task> _subTasks = new List<Task>();
@@ -45,7 +44,7 @@ namespace MyToDoList1
 
         public static void BadIndex(int id)
         {
-            Console.WriteLine("Could not find element by id {0}", id);
+            Console.WriteLine($"Could not find element by id {id}");
         }
     }
 }

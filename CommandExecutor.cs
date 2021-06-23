@@ -499,10 +499,7 @@ namespace MyToDoList1
                     var tasks = group.GetTasks();
                     var index = Task.GetIndexTaskById(tasks, id);
                     if (index == -1) continue;
-                    var subTask = new Task();
-                    subTask.Name = _list[2];
-                    subTask.Id = _list[2].GetHashCode();
-                    subTask.Date = "";
+                    var subTask = new Task {Name = _list[2], Id = _list[2].GetHashCode(), Date = ""};
                     tasks[index].AddSubTask(subTask);
                 }
             }
