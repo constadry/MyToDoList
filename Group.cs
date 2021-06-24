@@ -12,10 +12,7 @@ namespace MyToDoList1
 
         public List<Task> GetTasks() => _tasks;
 
-        private bool Duplicate(Task otherTask)
-        {
-            return _tasks.Any(task => task.Name == otherTask.Name);
-        } 
+        private bool Duplicate(Task otherTask) => _tasks.Any(task => task.Name == otherTask.Name);
         
         public void AddItem(Task task)
         {
@@ -69,7 +66,7 @@ namespace MyToDoList1
 
         public static void BadName(string name)
         {
-            Console.WriteLine("Could not find group by name: {0}", name);
+            Console.WriteLine($"Could not find group by name: {name}");
         }
     }
 }

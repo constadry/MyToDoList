@@ -26,10 +26,7 @@ namespace MyToDoList1
 
         private readonly List<Task> _subTasks = new List<Task>();
 
-        private bool Duplicate(Task otherTask)
-        {
-            return _subTasks.Any(task => task.Name == otherTask.Name);
-        } 
+        private bool Duplicate(Task otherTask) => _subTasks.Any(task => task.Name == otherTask.Name);
         
         public void AddSubTask(Task task)
         {
@@ -56,7 +53,7 @@ namespace MyToDoList1
         {
             var date = _date.ToString("d");
             var data = $"  {Name} {Id}";
-            if (_date != new DateTime()) data += date;
+            if (_date != new DateTime()) data += $" {date}";
             if (_subTasks.Count != 0) data += $" {CountCompleted}/{_subTasks.Count}";
             return data;
         }
