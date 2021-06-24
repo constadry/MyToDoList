@@ -7,9 +7,22 @@ namespace MyToDoList1
     internal class Task
     {
         public string Name { get; set; }
-        public string Date { get; set; }
+        private DateTime _date;
         public int Id { get; set; }
         public int CountCompleted { get; set; }
+
+        public void SetDate(string dateString)
+        {
+            try{
+                _date = DateTime.Parse(dateString,
+                    System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch(Exception e){
+                Console.WriteLine($"Invalid date format:\n{e}");
+            }
+        }
+        
+        public DateTime Date() => _date;
 
         private readonly List<Task> _subTasks = new List<Task>();
 
@@ -23,10 +36,7 @@ namespace MyToDoList1
             if (!Duplicate(task)) _subTasks.Add(task);
         }
 
-        public List<Task> GetSubTasks()
-        {
-            return _subTasks;
-        }
+        public List<Task> GetSubTasks() => _subTasks;
 
         public static int GetIndexTaskById(List<Task> tasks, int id)
         {
@@ -40,6 +50,15 @@ namespace MyToDoList1
             }
 
             return index;
+        }
+
+        public new string ToString()
+        {
+            var date = _date.ToString("d");
+            var data = $"  {Name} {Id}";
+            if (_date != new DateTime()) data += date;
+            if (_subTasks.Count != 0) data += $" {CountCompleted}/{_subTasks.Count}";
+            return data;
         }
 
         public static void BadIndex(int id)

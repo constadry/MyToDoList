@@ -10,10 +10,7 @@ namespace MyToDoList1
         private readonly List<string> _completed = new List<string>();
         public string Name { get; set; }
 
-        public List<Task> GetTasks()
-        {
-            return _tasks;
-        }
+        public List<Task> GetTasks() => _tasks;
 
         private bool Duplicate(Task otherTask)
         {
@@ -48,24 +45,10 @@ namespace MyToDoList1
             Console.WriteLine(Name + ":");
             foreach (var task in _tasks)
             {
-                Console.WriteLine
-                (
-                    "  {0} {1} {2} {3}/{4}",
-                    task.Name,
-                    Convert.ToString(task.Id),
-                    task.Date,
-                    task.CountCompleted,
-                    task.GetSubTasks().Count
-                    );
+                Console.WriteLine(task.ToString());
                 foreach (var subTask in task.GetSubTasks())
                 {
-                    Console.WriteLine
-                    (
-                        "    {0} {1} {2}",
-                        subTask.Name,
-                        Convert.ToString(subTask.Id),
-                        subTask.Date
-                    );
+                    Console.WriteLine($"  {subTask.ToString()}");
                 }
             }
         }

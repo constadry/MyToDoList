@@ -10,10 +10,7 @@ namespace MyToDoList1
             _words = new List<string>(input.Split());
         }
 
-        public List<string> GetList()
-        {
-            return _words;
-        }
+        public List<string> GetList() => _words;
 
         public static bool ParseId(string str, out int id)
         {

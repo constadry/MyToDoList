@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MyToDoList1
 {
@@ -24,180 +25,104 @@ namespace MyToDoList1
 
         public void Execute()
         {
-            if (_list[0] == "/add")
+            switch (_list[0])
             {
-                if (_list.Count == 2)
-                {
+                case "/add" when _list.Count == 2:
                     AddTask();
-                }
-                else
-                {
+                    break;
+                case "/add":
                     BadCommandFormat();
-                }
-            }
-            
-            else if (_list[0] == "/all")
-            {
-                if (_list.Count == 1)
-                {
+                    break;
+                case "/all" when _list.Count == 1:
                     WriteAllTasks();
-                }
-                else
-                {
+                    break;
+                case "/all":
                     BadCommandFormat();
-                }
-            }
-
-            else if (_list[0] == "/delete")
-            {
-                if (_list.Count == 2)
-                {
+                    break;
+                case "/delete" when _list.Count == 2:
                     DeleteTask();
-                }
-                else
-                {
+                    break;
+                case "/delete":
                     BadCommandFormat();
-                }
-            }
-            
-            else if (_list[0] == "/load")
-            {
-                if (_list.Count == 2)
-                {
+                    break;
+                case "/load" when _list.Count == 2:
                     LoadTaskFromFile();
-                }
-                else
-                {
+                    break;
+                case "/load":
                     BadCommandFormat();
-                }
-            }
-            else if (_list[0] == "/save")
-            {
-                if (_list.Count == 2)
-                {
+                    break;
+                case "/save" when _list.Count == 2:
                     SaveTaskToFile();
-                }
-                else
-                {
+                    break;
+                case "/save":
                     BadCommandFormat();
-                }
-            }
-            
-            else if (_list[0] == "/complete")
-            {
-                if (_list.Count == 2)
-                {
+                    break;
+                case "/complete" when _list.Count == 2:
                     Complete();
-                }
-                else
-                {
+                    break;
+                case "/complete":
                     BadCommandFormat();
-                }
-            }
-            
-            else if (_list[0] == "/time")
-            {
-                if (_list.Count == 3)
-                {
+                    break;
+                case "/time" when _list.Count == 3:
                     AddTimeLimitToTask();
-                }
-                else
-                {
+                    break;
+                case "/time":
                     BadCommandFormat();
-                }
-            }
-            
-            else if (_list[0] == "/today")
-            {
-                if (_list.Count == 1)
-                {
+                    break;
+                case "/today" when _list.Count == 1:
                     TasksForToday();
-                }
-                else
-                {
+                    break;
+                case "/today":
                     BadCommandFormat();
-                }
-            }
-
-            else if (_list[0] == "/create-group")
-            {
-                if (_list.Count == 2)
-                {
+                    break;
+                case "/create-group" when _list.Count == 2:
                     CreateGroup(_list[1]);
-                }
-                else
-                {
+                    break;
+                case "/create-group":
                     BadCommandFormat();
-                }
-            }
-            
-            else if (_list[0] == "/delete-group")
-            {
-                if (_list.Count == 2)
-                {
+                    break;
+                case "/delete-group" when _list.Count == 2:
                     DeleteGroup();
-                }
-                else
-                {
+                    break;
+                case "/delete-group":
                     BadCommandFormat();
-                }
-            }
-            
-            else if (_list[0] == "/add-to-group")
-            {
-                if (_list.Count == 3)
-                {
+                    break;
+                case "/add-to-group" when _list.Count == 3:
                     AddItemToGroup();
-                }
-                else
-                {
+                    break;
+                case "/add-to-group":
                     BadCommandFormat();
-                }
-            }
-            
-            else if (_list[0] == "/delete-from-group")
-            {
-                if (_list.Count == 3)
-                {
+                    break;
+                case "/delete-from-group" when _list.Count == 3:
                     DeleteItemFromGroup();
-                }
-                else
-                {
+                    break;
+                case "/delete-from-group":
                     BadCommandFormat();
-                }
-            }
-            
-            else if (_list[0] == "/completed")
-            {
-                switch (_list.Count)
-                {
-                    case 2:
-                        GroupCompleted();
-                        break;
-                    case 1:
-                        WriteAllCompleted();
-                        break;
-                    default:
-                        BadCommandFormat();
-                        break;
-                }
-            }
-            
-            else if (_list[0] == "/add-subtask")
-            {
-                if (_list.Count == 3)
-                {
-                    AddSubTaskToTask();
-                }
-                else
-                {
-                    BadCommandFormat();
-                }
-            }
+                    break;
+                case "/completed":
+                    switch (_list.Count)
+                    {
+                        case 2:
+                            GroupCompleted();
+                            break;
+                        case 1:
+                            WriteAllCompleted();
+                            break;
+                        default:
+                            BadCommandFormat();
+                            break;
+                    }
 
-            else
-            {
-                BadCommandFormat();
+                    break;
+                case "/add-subtask" when _list.Count == 3:
+                    AddSubTaskToTask();
+                    break;
+                case "/add-subtask":
+                    BadCommandFormat();
+                    break;
+                default:
+                    BadCommandFormat();
+                    break;
             }
         }
 
@@ -207,7 +132,6 @@ namespace MyToDoList1
             {
                 Name = _list[1],
                 Id = _list[1].GetHashCode(),
-                Date = "",
                 CountCompleted = 0
             };
             var index = Group.FindIndexByName(_groups, "Tasks");
@@ -220,19 +144,9 @@ namespace MyToDoList1
         private void WriteAllTasks()
         {
             Console.WriteLine("Format: Name of the task, id, date");
-            foreach (var group in _groups)
-            {
-                group.Tasks();
-            }
-
-            if (_completed.Count != 0)
-            {
-                Console.WriteLine("Completed task:");
-            }
-            foreach (var task in _completed)
-            {
-                Console.WriteLine(task);
-            }
+            foreach (var group in _groups) group.Tasks();
+            if (_completed.Count != 0) Console.WriteLine("Completed task:");
+            foreach (var task in _completed) Console.WriteLine(task);
         }
         
         private void DeleteTask()
@@ -240,11 +154,9 @@ namespace MyToDoList1
             if (StringParser.ParseId(_list[1], out var id))
             {
                 var index = Group.FindIndexByName(_groups, "Tasks");
-                if (index != -1)
-                {
-                    var indexTask = Task.GetIndexTaskById(_groups[index].GetTasks(), id);
-                    if (indexTask != -1) _groups[index].DeleteItem(indexTask);
-                }
+                if (index == -1) return;
+                var indexTask = Task.GetIndexTaskById(_groups[index].GetTasks(), id);
+                if (indexTask != -1) _groups[index].DeleteItem(indexTask);
             }
             else
             {
@@ -255,11 +167,9 @@ namespace MyToDoList1
         private int LoadGroup(string nameGroup)
         {
             var indexGroup = Group.FindIndexByName(_groups, nameGroup);
-            if (indexGroup == -1)
-            {
-                CreateGroup(nameGroup);
-                indexGroup = _groups.Count - 1;
-            }
+            if (indexGroup != -1) return indexGroup;
+            CreateGroup(nameGroup);
+            indexGroup = _groups.Count - 1;
 
             return indexGroup;
         }
@@ -269,10 +179,10 @@ namespace MyToDoList1
             if (File.Exists(_list[1]))
             {
                 var indexGroup = -1;
-                string[] fileTasks = File.ReadAllLines(_list[1]);
-                foreach (var line in fileTasks)
+                var fileTasks = File.ReadAllLines(_list[1]);
+                for (var j = 0; j < fileTasks.Length; ++j)
                 {
-                    var words = new StringParser(line).GetList();
+                    var words = new StringParser(fileTasks[j]).GetList();
                     if (words.Count == 1)
                     {
                         indexGroup = LoadGroup(words[0]);
@@ -288,8 +198,24 @@ namespace MyToDoList1
                         {
                             BadId(id);
                         }
-                        task.Date = words.Count == 3 ? words[2] : "";
-                        task.CountCompleted = 0;
+                        task.CountCompleted = Convert.ToInt32(words[2]); 
+                        if(words.Count == 5) task.SetDate(words[4]);
+                        for (int i = 0; i < Convert.ToInt32(words[3]); i++)
+                        {
+                            ++j;
+                            var subWords = new StringParser(fileTasks[j]).GetList();
+                            var subTask = new Task{Name = subWords[0]};
+                            if (StringParser.ParseId(subWords[1], out var subId))
+                            {
+                                subTask.Id = subId;
+                            }
+                            else
+                            {
+                                BadId(id);
+                            }
+                            if(subWords.Count == 3) task.SetDate(subWords[2]);
+                            task.AddSubTask(subTask);
+                        }
                         _groups[indexGroup].AddItem(task);
                     }
                 }
@@ -300,15 +226,22 @@ namespace MyToDoList1
             }
         }
 
+        private static string SubTaskString(Task subTask) => $"{subTask.Name} {subTask.Id} {subTask.Date():MM.dd.yyyy}";
+
         private void SaveTaskToFile()
         {
-            List<string> lines = new List<string>();
+            var lines = new List<string>();
             foreach (var group in _groups)
             {
                 lines.Add(group.Name);
                 foreach (var task in group.GetTasks())
                 {
-                    lines.Add(task.Name + " " + Convert.ToString(task.Id) + " " + task.Date);
+                    var subTasks= task.GetSubTasks();
+                    var taskString =
+                        $"{task.Name} {task.Id} {task.CountCompleted} {subTasks.Count} {task.Date():MM.dd.yyyy}"; 
+                    lines.Add(taskString);
+                    if (subTasks.Count == 0 || task.CountCompleted == task.GetSubTasks().Count) continue;
+                    lines.AddRange(subTasks.Select(SubTaskString));
                 }
                 
             }
@@ -380,7 +313,8 @@ namespace MyToDoList1
                 {
                     var index = Task.GetIndexTaskById(group.GetTasks(), id);
                     if (index == -1) continue;
-                    group.GetTasks()[index].Date = _list[2];
+                    var tasks = group.GetTasks(); 
+                    tasks[index].SetDate(_list[2]);
                 }
             }
             else
@@ -391,17 +325,15 @@ namespace MyToDoList1
 
         private void TasksForToday()
         {
-            var dateToday = DateTime.Now.ToString("MM.dd.yyyy");
+            var dateToday = DateTime.Now;
             var taskName = "";
             foreach (var group in _groups)
             {
                 foreach (var task in group.GetTasks())
                 {
-                    if (task.Date == dateToday)
-                    {
-                        taskName = task.Name;
-                        Console.WriteLine(taskName);
-                    }
+                    if (task.Date().ToShortDateString() != dateToday.ToShortDateString()) continue;
+                    taskName = task.Name;
+                    Console.WriteLine(taskName);
                 }
             }
             if (taskName == "") Console.WriteLine("Today you're chilling");
@@ -434,9 +366,7 @@ namespace MyToDoList1
             {
                 if (StringParser.ParseId(_list[1], out var id))
                 {
-                    Console.WriteLine(id);
                     var indexGroupDefault = Group.FindIndexByName(_groups, "Tasks");
-                    Console.WriteLine(indexGroupDefault);
                     var groupDefault = _groups[indexGroupDefault];
                     var index = Task.GetIndexTaskById(groupDefault.GetTasks(), id);
                     if (index != -1)
@@ -464,17 +394,15 @@ namespace MyToDoList1
         {
             foreach (var group in _groups)
             {
-                if (group.Name == _list[2])
+                if (@group.Name != _list[2]) continue;
+                if (StringParser.ParseId(_list[1], out var id))
                 {
-                    if (StringParser.ParseId(_list[1], out var id))
-                    {
-                        var indexTask = Task.GetIndexTaskById(group.GetTasks(), id);
-                        if (indexTask != -1) group.DeleteItem(indexTask);
-                    }
-                    else
-                    {
-                        BadId(id);
-                    }
+                    var indexTask = Task.GetIndexTaskById(@group.GetTasks(), id);
+                    if (indexTask != -1) @group.DeleteItem(indexTask);
+                }
+                else
+                {
+                    BadId(id);
                 }
             }
         }
@@ -499,7 +427,7 @@ namespace MyToDoList1
                     var tasks = group.GetTasks();
                     var index = Task.GetIndexTaskById(tasks, id);
                     if (index == -1) continue;
-                    var subTask = new Task {Name = _list[2], Id = _list[2].GetHashCode(), Date = ""};
+                    var subTask = new Task {Name = _list[2], Id = _list[2].GetHashCode()};
                     tasks[index].AddSubTask(subTask);
                 }
             }
@@ -512,7 +440,7 @@ namespace MyToDoList1
 
         private static void BadId(int id)
         {
-            Console.WriteLine("Could not be parsed by id: {0}", id);
+            Console.WriteLine($"Could not be parsed by id: {id}");
         } 
     }
 }

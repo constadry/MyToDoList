@@ -6,8 +6,8 @@ namespace MyToDoList1
     {
         private static void AboutTime()
         {
-            Console.WriteLine("Write /time id date, to add deadline to the task");
-            Console.WriteLine("Date format: MM.dd.yyyy");
+            Console.WriteLine("\nWrite /time id date, to add deadline to the task");
+            Console.WriteLine("Date format: MM.dd.yyyy\n");
         }
         public static void Main()
         {
