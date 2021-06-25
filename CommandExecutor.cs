@@ -19,7 +19,7 @@ namespace MyToDoList1
         
         public void SetList(StringParser stringParser)
         {
-            _list = stringParser.GetList();
+            _list = stringParser.Words;
         }
 
         public void Execute()
@@ -138,18 +138,18 @@ namespace MyToDoList1
         private void WriteAllTasks()
         {
             Console.WriteLine("Format: Name of the task, id, date");
-            foreach (var group in _groups) group.Tasks();
+            foreach (var group in _groups) group.PrintTasks();
             if (_completed.Count != 0) Console.WriteLine("Completed task:");
             foreach (var task in _completed) Console.WriteLine(task);
         }
         
         private void DeleteTask()
         {
-            if (StringParser.ParseId(_list[1], out var id))
+            if (StringParser.TryParseId(_list[1], out var id))
             {
                 var index = Group.FindIndexByName(_groups, "Tasks");
                 if (index == -1) return;
-                var indexTask = Task.GetIndexTaskById(_groups[index].GetTasks(), id);
+                var indexTask = Task.TaskIndex(_groups[index].Tasks, id);
                 if (indexTask != -1) _groups[index].DeleteItem(indexTask);
             }
             else
@@ -176,22 +176,22 @@ namespace MyToDoList1
                 var fileTasks = File.ReadAllLines(_list[1]);
                 for (var j = 0; j < fileTasks.Length; ++j)
                 {
-                    var words = new StringParser(fileTasks[j]).GetList();
+                    var words = new StringParser(fileTasks[j]).Words;
                     if (words.Count == 1)
                     {
                         indexGroup = LoadGroup(words[0]);
                     }
                     else
                     {
-                        if (!StringParser.ParseId(words[1], out var id)) BadId(id);
+                        if (!StringParser.TryParseId(words[1], out var id)) BadId(id);
                         var countCompleted = Convert.ToInt32(words[2]);
                         var task = new Task(words[0], id, countCompleted);
                         if(words.Count == 5) task.SetDate(words[4]);
                         for (int i = 0; i < Convert.ToInt32(words[3]); i++)
                         {
                             ++j;
-                            var subWords = new StringParser(fileTasks[j]).GetList();
-                            if (StringParser.ParseId(subWords[1], out var subId)) BadId(subId);
+                            var subWords = new StringParser(fileTasks[j]).Words;
+                            if (StringParser.TryParseId(subWords[1], out var subId)) BadId(subId);
                             var subTask = new Task(subWords[0], subId, 0);
                             if(subWords.Count == 3) task.SetDate(subWords[2]);
                             task.AddSubTask(subTask);
@@ -214,13 +214,13 @@ namespace MyToDoList1
             foreach (var group in _groups)
             {
                 lines.Add(group.Name);
-                foreach (var task in group.GetTasks())
+                foreach (var task in group.Tasks)
                 {
-                    var subTasks= task.GetSubTasks();
+                    var subTasks= task.SubTasks;
                     var taskString =
                         $"{task.Name} {task.Id} {task.CountCompleted} {subTasks.Count} {task.Date:MM.dd.yyyy}"; 
                     lines.Add(taskString);
-                    if (subTasks.Count == 0 || task.CountCompleted == task.GetSubTasks().Count) continue;
+                    if (subTasks.Count == 0 || task.CountCompleted == task.SubTasks.Count) continue;
                     lines.AddRange(subTasks.Select(SubTaskString));
                 }
                 
@@ -237,14 +237,14 @@ namespace MyToDoList1
         
         private void CompleteSubTask(Group group, int id)
         {
-            for(var i = 0; i < group.GetTasks().Count; ++i)
+            for(var i = 0; i < group.Tasks.Count; ++i)
             {
-                var task = group.GetTasks()[i];
-                var subTasks = task.GetSubTasks();
+                var task = group.Tasks[i];
+                var subTasks = task.SubTasks;
                 if (subTasks.Count != 0)
                 {
                     if (task.CountCompleted == subTasks.Count) continue;
-                    var index = Task.GetIndexTaskById(@task.GetSubTasks(), id);
+                    var index = Task.TaskIndex(@task.SubTasks, id);
                     if (index == -1) continue;
                     
                     // _completed.Add(@task.GetSubTasks()[index].Name);
@@ -264,7 +264,7 @@ namespace MyToDoList1
         
         private void Complete()
         {
-            if (StringParser.ParseId(_list[1], out var id))
+            if (StringParser.TryParseId(_list[1], out var id))
             {
                 foreach (var group in _groups)
                 {
@@ -287,13 +287,13 @@ namespace MyToDoList1
 
         private void AddTimeLimitToTask()
         {
-            if (StringParser.ParseId(_list[1], out var id))
+            if (StringParser.TryParseId(_list[1], out var id))
             {
                 foreach (var group in _groups)
                 {
-                    var index = Task.GetIndexTaskById(group.GetTasks(), id);
+                    var index = Task.TaskIndex(group.Tasks, id);
                     if (index == -1) continue;
-                    var tasks = group.GetTasks(); 
+                    var tasks = group.Tasks; 
                     tasks[index].SetDate(_list[2]);
                 }
             }
@@ -309,7 +309,7 @@ namespace MyToDoList1
             var taskName = "";
             foreach (var group in _groups)
             {
-                foreach (var task in group.GetTasks())
+                foreach (var task in group.Tasks)
                 {
                     if (task.Date.ToShortDateString() != dateToday.ToShortDateString()) continue;
                     taskName = task.Name;
@@ -343,15 +343,15 @@ namespace MyToDoList1
             var indexGroup = Group.FindIndexByName(_groups, _list[2]);
             if (indexGroup != -1)
             {
-                if (StringParser.ParseId(_list[1], out var id))
+                if (StringParser.TryParseId(_list[1], out var id))
                 {
                     var indexGroupDefault = Group.FindIndexByName(_groups, "Tasks");
                     var groupDefault = _groups[indexGroupDefault];
-                    var index = Task.GetIndexTaskById(groupDefault.GetTasks(), id);
+                    var index = Task.TaskIndex(groupDefault.Tasks, id);
                     if (index != -1)
                     {
-                        _groups[indexGroup].AddItem(groupDefault.GetTasks()[index]);
-                        groupDefault.GetTasks().RemoveAt(index);    
+                        _groups[indexGroup].AddItem(groupDefault.Tasks[index]);
+                        groupDefault.Tasks.RemoveAt(index);    
                     }
                     else
                     {
@@ -374,9 +374,9 @@ namespace MyToDoList1
             foreach (var group in _groups)
             {
                 if (@group.Name != _list[2]) continue;
-                if (StringParser.ParseId(_list[1], out var id))
+                if (StringParser.TryParseId(_list[1], out var id))
                 {
-                    var indexTask = Task.GetIndexTaskById(@group.GetTasks(), id);
+                    var indexTask = Task.TaskIndex(@group.Tasks, id);
                     if (indexTask != -1) @group.DeleteItem(indexTask);
                 }
                 else
@@ -399,12 +399,12 @@ namespace MyToDoList1
 
         private void AddSubTaskToTask()
         {
-            if (StringParser.ParseId(_list[1], out var id))
+            if (StringParser.TryParseId(_list[1], out var id))
             {
                 foreach (var group in _groups)
                 {
-                    var tasks = group.GetTasks();
-                    var index = Task.GetIndexTaskById(tasks, id);
+                    var tasks = group.Tasks;
+                    var index = Task.TaskIndex(tasks, id);
                     if (index == -1) continue;
                     var subId = _list[2].GetHashCode();
                     var subTask = new Task(_list[0], subId, 0);

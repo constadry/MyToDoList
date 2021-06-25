@@ -10,14 +10,13 @@ namespace MyToDoList1
         public int Id { get; }
         public int CountCompleted { get; set; }
         public DateTime Date { get; private set; }
-        
-        private readonly List<Task> _subTasks = new List<Task>();
-
-        public Task(string name, int id, int countCompleted, DateTime date = new DateTime())
+        public List<Task> SubTasks { get; }
+        public Task(string name, int id, int countCompleted)
         {
             Name = name;
             Id = id;
             CountCompleted = countCompleted;
+            SubTasks = new List<Task>();
         }
 
         public void SetDate(string dateString)
@@ -30,20 +29,15 @@ namespace MyToDoList1
                 Console.WriteLine($"Invalid date format:\n{e}");
             }
         }
-        
 
-        
-
-        private bool Duplicate(Task otherTask) => _subTasks.Any(task => task.Name == otherTask.Name);
+        private bool IsDuplicate(Task otherTask) => SubTasks.Any(task => task.Name == otherTask.Name);
         
         public void AddSubTask(Task task)
         {
-            if (!Duplicate(task)) _subTasks.Add(task);
+            if (!IsDuplicate(task)) SubTasks.Add(task);
         }
 
-        public List<Task> GetSubTasks() => _subTasks;
-
-        public static int GetIndexTaskById(List<Task> tasks, int id)
+        public static int TaskIndex(List<Task> tasks, int id)
         {
             var index = -1; 
             for (var i = 0; i < tasks.Count; i++)
@@ -62,7 +56,7 @@ namespace MyToDoList1
             var date = Date.ToString("d");
             var data = $"  {Name} {Id}";
             if (Date != new DateTime()) data += $" {date}";
-            if (_subTasks.Count != 0) data += $" {CountCompleted}/{_subTasks.Count}";
+            if (SubTasks.Count != 0) data += $" {CountCompleted}/{SubTasks.Count}";
             return data;
         }
 

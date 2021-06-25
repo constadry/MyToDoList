@@ -6,32 +6,31 @@ namespace MyToDoList1
 {
     internal class Group
     {
-        private readonly List<Task> _tasks = new List<Task>();
         private readonly List<string> _completed = new List<string>();
+        public List<Task> Tasks { get; }
         public string Name { get; }
 
         public Group(string name)
         {
             Name = name;
+            Tasks = new List<Task>();
         }
-
-        public List<Task> GetTasks() => _tasks;
-
-        private bool Duplicate(Task otherTask) => _tasks.Any(task => task.Name == otherTask.Name);
+        
+        private bool IsDuplicate(Task otherTask) => Tasks.Any(task => task.Name == otherTask.Name);
         
         public void AddItem(Task task)
         {
-            if (!Duplicate(task)) _tasks.Add(task);
+            if (!IsDuplicate(task)) Tasks.Add(task);
         }
         
         public void DeleteItem(int index)
         { 
-            _tasks.RemoveAt(index);
+            Tasks.RemoveAt(index);
         }
 
         public void AddToCompleted(int index)
         {
-            _completed.Add(_tasks[index].Name);
+            _completed.Add(Tasks[index].Name);
         }
         
         public void Completed()
@@ -41,20 +40,18 @@ namespace MyToDoList1
                 Console.WriteLine(task);
             }
         }
-
-        public void Tasks()
+        public void PrintTasks()
         {
             Console.WriteLine(Name + ":");
-            foreach (var task in _tasks)
+            foreach (var task in Tasks)
             {
                 Console.WriteLine(task.ToString());
-                foreach (var subTask in task.GetSubTasks())
+                foreach (var subTask in task.SubTasks)
                 {
                     Console.WriteLine($"  {subTask.ToString()}");
                 }
             }
         }
-
         public static int FindIndexByName(List<Group> groups, string name)
         {
             var index = -1;
