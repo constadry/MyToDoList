@@ -6,15 +6,24 @@ namespace MyToDoList1
 {
     internal class Task
     {
-        public string Name { get; set; }
-        private DateTime _date;
-        public int Id { get; set; }
+        public string Name { get; }
+        public int Id { get; }
         public int CountCompleted { get; set; }
+        public DateTime Date { get; private set; }
+        
+        private readonly List<Task> _subTasks = new List<Task>();
+
+        public Task(string name, int id, int countCompleted, DateTime date = new DateTime())
+        {
+            Name = name;
+            Id = id;
+            CountCompleted = countCompleted;
+        }
 
         public void SetDate(string dateString)
         {
             try{
-                _date = DateTime.Parse(dateString,
+                Date = DateTime.Parse(dateString,
                     System.Globalization.CultureInfo.InvariantCulture);
             }
             catch(Exception e){
@@ -22,9 +31,8 @@ namespace MyToDoList1
             }
         }
         
-        public DateTime Date() => _date;
 
-        private readonly List<Task> _subTasks = new List<Task>();
+        
 
         private bool Duplicate(Task otherTask) => _subTasks.Any(task => task.Name == otherTask.Name);
         
@@ -51,9 +59,9 @@ namespace MyToDoList1
 
         public new string ToString()
         {
-            var date = _date.ToString("d");
+            var date = Date.ToString("d");
             var data = $"  {Name} {Id}";
-            if (_date != new DateTime()) data += $" {date}";
+            if (Date != new DateTime()) data += $" {date}";
             if (_subTasks.Count != 0) data += $" {CountCompleted}/{_subTasks.Count}";
             return data;
         }

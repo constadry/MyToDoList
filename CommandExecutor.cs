@@ -13,8 +13,7 @@ namespace MyToDoList1
 
         public CommandExecutor()
         {
-            var group = new Group();
-            group.Name = "Tasks";
+            var group = new Group("Tasks");
             _groups.Add(group);
         }
         
@@ -128,12 +127,7 @@ namespace MyToDoList1
 
         private void AddTask()
         {
-            var task = new Task
-            {
-                Name = _list[1],
-                Id = _list[1].GetHashCode(),
-                CountCompleted = 0
-            };
+            var task = new Task(_list[1], _list[1].GetHashCode(), 0);
             var index = Group.FindIndexByName(_groups, "Tasks");
             if (index != -1)
             {
@@ -189,30 +183,16 @@ namespace MyToDoList1
                     }
                     else
                     {
-                        var task = new Task {Name = words[0]};
-                        if (StringParser.ParseId(words[1], out var id))
-                        {
-                            task.Id = id;
-                        }
-                        else
-                        {
-                            BadId(id);
-                        }
-                        task.CountCompleted = Convert.ToInt32(words[2]); 
+                        if (!StringParser.ParseId(words[1], out var id)) BadId(id);
+                        var countCompleted = Convert.ToInt32(words[2]);
+                        var task = new Task(words[0], id, countCompleted);
                         if(words.Count == 5) task.SetDate(words[4]);
                         for (int i = 0; i < Convert.ToInt32(words[3]); i++)
                         {
                             ++j;
                             var subWords = new StringParser(fileTasks[j]).GetList();
-                            var subTask = new Task{Name = subWords[0]};
-                            if (StringParser.ParseId(subWords[1], out var subId))
-                            {
-                                subTask.Id = subId;
-                            }
-                            else
-                            {
-                                BadId(id);
-                            }
+                            if (StringParser.ParseId(subWords[1], out var subId)) BadId(subId);
+                            var subTask = new Task(subWords[0], subId, 0);
                             if(subWords.Count == 3) task.SetDate(subWords[2]);
                             task.AddSubTask(subTask);
                         }
@@ -226,7 +206,7 @@ namespace MyToDoList1
             }
         }
 
-        private static string SubTaskString(Task subTask) => $"{subTask.Name} {subTask.Id} {subTask.Date():MM.dd.yyyy}";
+        private static string SubTaskString(Task subTask) => $"{subTask.Name} {subTask.Id} {subTask.Date:MM.dd.yyyy}";
 
         private void SaveTaskToFile()
         {
@@ -238,7 +218,7 @@ namespace MyToDoList1
                 {
                     var subTasks= task.GetSubTasks();
                     var taskString =
-                        $"{task.Name} {task.Id} {task.CountCompleted} {subTasks.Count} {task.Date():MM.dd.yyyy}"; 
+                        $"{task.Name} {task.Id} {task.CountCompleted} {subTasks.Count} {task.Date:MM.dd.yyyy}"; 
                     lines.Add(taskString);
                     if (subTasks.Count == 0 || task.CountCompleted == task.GetSubTasks().Count) continue;
                     lines.AddRange(subTasks.Select(SubTaskString));
@@ -331,7 +311,7 @@ namespace MyToDoList1
             {
                 foreach (var task in group.GetTasks())
                 {
-                    if (task.Date().ToShortDateString() != dateToday.ToShortDateString()) continue;
+                    if (task.Date.ToShortDateString() != dateToday.ToShortDateString()) continue;
                     taskName = task.Name;
                     Console.WriteLine(taskName);
                 }
@@ -341,8 +321,7 @@ namespace MyToDoList1
 
         private void CreateGroup(string name)
         {
-            var group = new Group();
-            group.Name = name;
+            var group = new Group(name);
             _groups.Add(group);
         }
 
@@ -427,10 +406,12 @@ namespace MyToDoList1
                     var tasks = group.GetTasks();
                     var index = Task.GetIndexTaskById(tasks, id);
                     if (index == -1) continue;
-                    var subTask = new Task {Name = _list[2], Id = _list[2].GetHashCode()};
+                    var subId = _list[2].GetHashCode();
+                    var subTask = new Task(_list[0], subId, 0);
                     tasks[index].AddSubTask(subTask);
                 }
             }
+            //Bad id
         }
         
         private static void BadCommandFormat()

@@ -8,7 +8,12 @@ namespace MyToDoList1
     {
         private readonly List<Task> _tasks = new List<Task>();
         private readonly List<string> _completed = new List<string>();
-        public string Name { get; set; }
+        public string Name { get; }
+
+        public Group(string name)
+        {
+            Name = name;
+        }
 
         public List<Task> GetTasks() => _tasks;
 
