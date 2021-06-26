@@ -40,19 +40,8 @@ namespace MyToDoList1
                 Console.WriteLine(task);
             }
         }
-        public void PrintTasks()
-        {
-            Console.WriteLine(Name + ":");
-            foreach (var task in Tasks)
-            {
-                Console.WriteLine(task.ToString());
-                foreach (var subTask in task.SubTasks)
-                {
-                    Console.WriteLine($"  {subTask.ToString()}");
-                }
-            }
-        }
-        public static int FindIndexByName(List<Group> groups, string name)
+        
+        public static int GroupIndex(List<Group> groups, string name)
         {
             var index = -1;
             for (var i = 0; i < groups.Count; i++)

@@ -33,7 +33,7 @@ namespace MyToDoList1
                     BadCommandFormat();
                     break;
                 case "/all" when _list.Count == 1:
-                    WriteAllTasks();
+                    TaskWriter.WriteAllTasks(_groups, _completed);
                     break;
                 case "/all":
                     BadCommandFormat();
@@ -128,26 +128,18 @@ namespace MyToDoList1
         private void AddTask(string taskName)
         {
             var task = new Task(taskName, taskName.GetHashCode(), 0);
-            var index = Group.FindIndexByName(_groups, "Tasks");
+            var index = Group.GroupIndex(_groups, "Tasks");
             if (index != -1)
             {
                 _groups[index].AddItem(task);
             }
-        }
-
-        private void WriteAllTasks()
-        {
-            Console.WriteLine("Format: Name of the task, id, date");
-            foreach (var group in _groups) group.PrintTasks();
-            if (_completed.Count != 0) Console.WriteLine("Completed task:");
-            foreach (var task in _completed) Console.WriteLine(task);
         }
         
         private void DeleteTask(string taskName)
         {
             if (StringParser.TryParseId(taskName, out var id))
             {
-                var index = Group.FindIndexByName(_groups, "Tasks");
+                var index = Group.GroupIndex(_groups, "Tasks");
                 if (index == -1) return;
                 var indexTask = Task.TaskIndex(_groups[index].Tasks, id);
                 if (indexTask != -1) _groups[index].DeleteItem(indexTask);
@@ -160,7 +152,7 @@ namespace MyToDoList1
 
         private int LoadGroup(string nameGroup)
         {
-            var indexGroup = Group.FindIndexByName(_groups, nameGroup);
+            var indexGroup = Group.GroupIndex(_groups, nameGroup);
             if (indexGroup != -1) return indexGroup;
             CreateGroup(nameGroup);
             indexGroup = _groups.Count - 1;
@@ -327,7 +319,7 @@ namespace MyToDoList1
 
         private void DeleteGroup(string name)
         {
-            var index = Group.FindIndexByName(_groups, name);
+            var index = Group.GroupIndex(_groups, name);
             if (index != -1)
             {
                 _groups.RemoveAt(index);
@@ -340,12 +332,12 @@ namespace MyToDoList1
 
         private void AddItemToGroup(string taskId, string groupName)
         {
-            var indexGroup = Group.FindIndexByName(_groups, groupName);
+            var indexGroup = Group.GroupIndex(_groups, groupName);
             if (indexGroup != -1)
             {
                 if (StringParser.TryParseId(taskId, out var id))
                 {
-                    var indexGroupDefault = Group.FindIndexByName(_groups, "Tasks");
+                    var indexGroupDefault = Group.GroupIndex(_groups, "Tasks");
                     var groupDefault = _groups[indexGroupDefault];
                     var index = Task.TaskIndex(groupDefault.Tasks, id);
                     if (index != -1)
