@@ -51,7 +51,7 @@ namespace MyToDoList1
             return index;
         }
 
-        public new string ToString()
+        public override string ToString()
         {
             var date = Date.ToString("d");
             var data = $"  {Name} {Id}";
