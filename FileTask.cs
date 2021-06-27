@@ -22,20 +22,22 @@ namespace MyToDoList1
         {
             var id = words[0].GetHashCode(); 
             var countCompleted = Convert.ToInt32(words[1]);
-            var task = new Task(words[0], id, countCompleted);
-            if(words.Count == 4) task.SetDate(words[3]);
+            var isCompleted = Convert.ToBoolean(words[3]);
+            var task = new Task(words[0], id, countCompleted, isCompleted);
+            if(words.Count == 5) task.SetDate(words[4]);
             return task;
         }
 
         public static Task LoadSubTask(List<string> subWords)
         {
             var subId = subWords[0].GetHashCode();
-            var subTask = new Task(subWords[0], subId, 0);
-            if(subWords.Count == 2) subTask.SetDate(subWords[1]);
+            var isCompleted = Convert.ToBoolean(subWords[1]);
+            var subTask = new Task(subWords[0], subId, 0, isCompleted);
+            if(subWords.Count == 3) subTask.SetDate(subWords[2]);
             return subTask;
         }
         
-        private static string SubTaskToString(Task subTask) => $"{subTask.Name} {subTask.Date:MM.dd.yyyy}";
+        private static string SubTaskToString(Task subTask) => $"{subTask.Name} {subTask.IsCompleted} {subTask.Date:MM.dd.yyyy}";
         
         public static void SaveTaskToFile(string fileName, IEnumerable<Group> groups)
         {
@@ -47,7 +49,7 @@ namespace MyToDoList1
                 {
                     var subTasks= task.SubTasks;
                     var taskString =
-                        $"{task.Name} {task.CountCompleted} {subTasks.Count} {task.Date:MM.dd.yyyy}"; 
+                        $"{task.Name} {task.CountCompleted} {subTasks.Count} {task.IsCompleted} {task.Date:MM.dd.yyyy}"; 
                     lines.Add(taskString);
                     if (subTasks.Count == 0 || task.CountCompleted == task.SubTasks.Count) continue;
                     lines.AddRange(subTasks.Select(SubTaskToString));

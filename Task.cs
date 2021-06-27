@@ -10,12 +10,14 @@ namespace MyToDoList1
         public int Id { get; }
         public int CountCompleted { get; set; }
         public DateTime Date { get; private set; }
+        public bool IsCompleted { get; set; }
         public List<Task> SubTasks { get; }
-        public Task(string name, int id, int countCompleted)
+        public Task(string name, int id, int countCompleted, bool isCompleted)
         {
             Name = name;
             Id = id;
             CountCompleted = countCompleted;
+            IsCompleted = isCompleted;
             SubTasks = new List<Task>();
         }
 
@@ -42,7 +44,11 @@ namespace MyToDoList1
             var index = -1; 
             for (var i = 0; i < tasks.Count; i++)
             {
-                if (id == tasks[i].Id)
+                if (tasks[i].SubTasks.Count != 0)
+                {
+                    TaskIndex(tasks[i].SubTasks, id);
+                } 
+                else if (id == tasks[i].Id)
                 {
                     index = i;
                 }
@@ -58,6 +64,11 @@ namespace MyToDoList1
             if (Date != new DateTime()) data += $" {date}";
             if (SubTasks.Count != 0) data += $" {CountCompleted}/{SubTasks.Count}";
             return data;
+        }
+
+        public void Complete()
+        {
+            IsCompleted = true;
         }
 
         public static void BadIndex(int id)

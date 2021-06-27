@@ -7,13 +7,11 @@ namespace MyToDoList1
     internal class CommandExecutor
     {
         private List<string> _list = new List<string>();
-        private readonly List<string> _completed = new List<string>();
         private readonly List<Group> _groups = new List<Group>();
 
         public CommandExecutor()
         {
-            var group = new Group("Tasks");
-            _groups.Add(group);
+            CreateGroup("Tasks");
         }
         
         public void SetList(StringParser stringParser)
@@ -32,7 +30,7 @@ namespace MyToDoList1
                     BadCommandFormat();
                     break;
                 case "/all" when _list.Count == 1:
-                    TaskWriter.WriteAllTasks(_groups, _completed);
+                    TaskWriter.WriteAllTasks(_groups);
                     break;
                 case "/all":
                     BadCommandFormat();
@@ -104,7 +102,7 @@ namespace MyToDoList1
                             GroupCompleted(_list[1]);
                             break;
                         case 1:
-                            WriteAllCompleted();
+                            TaskWriter.WriteCompletedTasks(_groups);
                             break;
                         default:
                             BadCommandFormat();
@@ -126,7 +124,7 @@ namespace MyToDoList1
 
         private void AddTask(string taskName)
         {
-            var task = new Task(taskName, taskName.GetHashCode(), 0);
+            var task = new Task(taskName, taskName.GetHashCode(), 0, false);
             var index = Group.GroupIndex(_groups, "Tasks");
             if (index != -1)
             {
@@ -165,9 +163,8 @@ namespace MyToDoList1
                     else
                     {
                         var task = FileTask.LoadTask(words);
-                        for (var i = 0; i < Convert.ToInt32(words[2]); i++)
+                        for (var i = 0; i < Convert.ToInt32(words[2]); ++i, ++j)
                         {
-                            ++j;
                             var subWords = new StringParser(fileTasks[j]).Words;
                             var subTask = FileTask.LoadSubTask(subWords);
                             task.AddSubTask(subTask);
@@ -182,60 +179,22 @@ namespace MyToDoList1
             }
         }
 
-        private void CompleteTask(Group group, Task task, int i)
-        {
-            _completed.Add(task.Name);
-            @group.AddToCompleted(i);
-            @group.DeleteItem(i);
-        }
-        
-        private void CompleteSubTask(Group group, int id)
-        {
-            for(var i = 0; i < group.Tasks.Count; ++i)
-            {
-                var task = group.Tasks[i];
-                var subTasks = task.SubTasks;
-                if (subTasks.Count != 0)
-                {
-                    if (task.CountCompleted == subTasks.Count) continue;
-                    var index = Task.TaskIndex(@task.SubTasks, id);
-                    if (index == -1) continue;
-                    
-                    // _completed.Add(@task.GetSubTasks()[index].Name);
-                    ++task.CountCompleted;
-                    if (task.CountCompleted != subTasks.Count) continue;
-                    CompleteTask(group, task, i);
-                }
-                else
-                {
-                    if (task.Id == id)
-                    {
-                        CompleteTask(group, task, i);
-                    }
-                }
-            }
-        }
-        
         private void Complete(string taskId)
         {
             if (StringParser.TryParseId(taskId, out var id))
             {
                 foreach (var group in _groups)
                 {
-                    CompleteSubTask(group, id);
+                    var index = Task.TaskIndex(group.Tasks, id);
+                    if (index == -1) continue;
+                    var task = group.Tasks[index];
+                    if (task.Id != id) task = task.SubTasks[index];
+                    task.Complete();
                 }
             }
             else
             {
                 BadId(id);
-            }
-        }
-
-        private void WriteAllCompleted()
-        {
-            foreach (var task in _completed)
-            {
-                Console.WriteLine(task);
             }
         }
 
@@ -265,7 +224,8 @@ namespace MyToDoList1
             {
                 foreach (var task in group.Tasks)
                 {
-                    if (task.Date.ToShortDateString() != dateToday.ToShortDateString()) continue;
+                    if (task.Date.ToShortDateString() != dateToday.ToShortDateString() 
+                        || task.IsCompleted) continue;
                     taskName = task.Name;
                     Console.WriteLine(taskName);
                 }
@@ -365,7 +325,7 @@ namespace MyToDoList1
                     var index = Task.TaskIndex(tasks, id);
                     if (index == -1) continue;
                     var subId = subTaskName.GetHashCode();
-                    var subTask = new Task(subTaskName, subId, 0);
+                    var subTask = new Task(subTaskName, subId, 0, false);
                     tasks[index].AddSubTask(subTask);
                 }
             }
