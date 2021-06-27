@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace MyToDoList1
 {
@@ -51,7 +50,7 @@ namespace MyToDoList1
                     BadCommandFormat();
                     break;
                 case "/save" when _list.Count == 2:
-                    SaveTaskToFile(_list[1]);
+                    FileTask.SaveTaskToFile(_list[1], _groups);
                     break;
                 case "/save":
                     BadCommandFormat();
@@ -149,46 +148,31 @@ namespace MyToDoList1
                 BadId(id);
             }
         }
-
-        private int LoadGroup(string nameGroup)
-        {
-            var indexGroup = Group.GroupIndex(_groups, nameGroup);
-            if (indexGroup != -1) return indexGroup;
-            CreateGroup(nameGroup);
-            indexGroup = _groups.Count - 1;
-
-            return indexGroup;
-        }
-
+        
         private void LoadTaskFromFile(string fileName)
         {
             if (File.Exists(fileName))
             {
-                var indexGroup = -1;
                 var fileTasks = File.ReadAllLines(fileName);
+                var group = new Group(null);
                 for (var j = 0; j < fileTasks.Length; ++j)
                 {
                     var words = new StringParser(fileTasks[j]).Words;
                     if (words.Count == 1)
                     {
-                        indexGroup = LoadGroup(words[0]);
+                        group = FileTask.LoadGroup(words[0], _groups);
                     }
                     else
                     {
-                        if (!StringParser.TryParseId(words[1], out var id)) BadId(id);
-                        var countCompleted = Convert.ToInt32(words[2]);
-                        var task = new Task(words[0], id, countCompleted);
-                        if(words.Count == 5) task.SetDate(words[4]);
-                        for (int i = 0; i < Convert.ToInt32(words[3]); i++)
+                        var task = FileTask.LoadTask(words);
+                        for (var i = 0; i < Convert.ToInt32(words[2]); i++)
                         {
                             ++j;
                             var subWords = new StringParser(fileTasks[j]).Words;
-                            if (StringParser.TryParseId(subWords[1], out var subId)) BadId(subId);
-                            var subTask = new Task(subWords[0], subId, 0);
-                            if(subWords.Count == 3) task.SetDate(subWords[2]);
+                            var subTask = FileTask.LoadSubTask(subWords);
                             task.AddSubTask(subTask);
                         }
-                        _groups[indexGroup].AddItem(task);
+                        group.AddItem(task);
                     }
                 }
             }
@@ -196,28 +180,6 @@ namespace MyToDoList1
             {
                 Console.WriteLine("Could not find this file");
             }
-        }
-
-        private static string SubTaskString(Task subTask) => $"{subTask.Name} {subTask.Id} {subTask.Date:MM.dd.yyyy}";
-
-        private void SaveTaskToFile(string fileName)
-        {
-            var lines = new List<string>();
-            foreach (var group in _groups)
-            {
-                lines.Add(group.Name);
-                foreach (var task in group.Tasks)
-                {
-                    var subTasks= task.SubTasks;
-                    var taskString =
-                        $"{task.Name} {task.Id} {task.CountCompleted} {subTasks.Count} {task.Date:MM.dd.yyyy}"; 
-                    lines.Add(taskString);
-                    if (subTasks.Count == 0 || task.CountCompleted == task.SubTasks.Count) continue;
-                    lines.AddRange(subTasks.Select(SubTaskString));
-                }
-                
-            }
-            File.WriteAllLines(fileName, lines);
         }
 
         private void CompleteTask(Group group, Task task, int i)

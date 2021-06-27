@@ -39,6 +39,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="CommandExecutor.cs" />
+        <Compile Include="FileTask.cs" />
         <Compile Include="Group.cs" />
         <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
