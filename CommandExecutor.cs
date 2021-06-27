@@ -306,12 +306,12 @@ namespace MyToDoList1
 
         private void GroupCompleted(string groupName)
         {
-            foreach (var group in _groups)
+            var groupIndex = Group.GroupIndex(_groups, groupName);
+            if (groupIndex == -1) BadCommandFormat();
+            else
             {
-                if (group.Name == groupName)
-                {
-                    group.Completed();
-                }
+                var group = _groups[groupIndex];
+                TaskWriter.PrintTasks(group, true);
             }
         }
 

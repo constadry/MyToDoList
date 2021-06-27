@@ -8,9 +8,9 @@ namespace MyToDoList1
     {
         public string Name { get; }
         public int Id { get; }
-        public int CountCompleted { get; set; }
+        public int CountCompleted { get; }
         public DateTime Date { get; private set; }
-        public bool IsCompleted { get; set; }
+        public bool IsCompleted { get; private set; }
         public List<Task> SubTasks { get; }
         public Task(string name, int id, int countCompleted, bool isCompleted)
         {

@@ -6,7 +6,6 @@ namespace MyToDoList1
 {
     internal class Group
     {
-        private readonly List<string> _completed = new List<string>();
         public List<Task> Tasks { get; }
         public string Name { get; }
 
@@ -28,19 +27,6 @@ namespace MyToDoList1
             Tasks.RemoveAt(index);
         }
 
-        public void AddToCompleted(int index)
-        {
-            _completed.Add(Tasks[index].Name);
-        }
-        
-        public void Completed()
-        {
-            foreach (var task in _completed)
-            {
-                Console.WriteLine(task);
-            }
-        }
-        
         public static int GroupIndex(List<Group> groups, string name)
         {
             var index = -1;

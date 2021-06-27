@@ -5,7 +5,7 @@ namespace MyToDoList1
 {
     internal static class TaskWriter
     {
-        private static void PrintTasks(Group @group, bool completed)
+        public static void PrintTasks(Group @group, bool completed)
         {
             Console.WriteLine(group.Name + ":");
             foreach (var task in group.Tasks)
