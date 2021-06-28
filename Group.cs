@@ -27,9 +27,9 @@ namespace MyToDoList1
             Tasks.RemoveAt(index);
         }
 
-        public static int GroupIndex(List<Group> groups, string name)
+        public static int? GroupIndex(List<Group> groups, string name)
         {
-            var index = -1;
+            int? index = null;
             for (var i = 0; i < groups.Count; i++)
             {
                 if (groups[i].Name == name)

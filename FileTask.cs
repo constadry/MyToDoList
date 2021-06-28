@@ -10,12 +10,12 @@ namespace MyToDoList1
         public static Group LoadGroup(string groupName, List<Group> groups)
         {
             var indexGroup = Group.GroupIndex(groups, groupName);
-            if (indexGroup != -1) return groups[indexGroup];
+            if (indexGroup.HasValue) return groups[indexGroup.Value];
             var group = new Group(groupName);
             groups.Add(@group);
             indexGroup = groups.Count - 1;
 
-            return groups[indexGroup];
+            return groups[indexGroup.Value];
         }
 
         public static Task LoadTask(List<string> words)

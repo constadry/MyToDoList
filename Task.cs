@@ -39,9 +39,9 @@ namespace MyToDoList1
             if (!IsDuplicate(task)) SubTasks.Add(task);
         }
 
-        public static int TaskIndex(List<Task> tasks, int id)
+        public static int? TaskIndex(List<Task> tasks, int id)
         {
-            var index = -1; 
+            int? index = null; 
             for (var i = 0; i < tasks.Count; i++)
             {
                 if (tasks[i].SubTasks.Count != 0)

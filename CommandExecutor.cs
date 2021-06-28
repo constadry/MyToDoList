@@ -126,9 +126,9 @@ namespace MyToDoList1
         {
             var task = new Task(taskName, taskName.GetHashCode(), 0, false);
             var index = Group.GroupIndex(_groups, "Tasks");
-            if (index != -1)
+            if (index.HasValue)
             {
-                _groups[index].AddItem(task);
+                _groups[index.Value].AddItem(task);
             }
         }
         
@@ -137,9 +137,9 @@ namespace MyToDoList1
             if (StringParser.TryParseId(taskName, out var id))
             {
                 var index = Group.GroupIndex(_groups, "Tasks");
-                if (index == -1) return;
-                var indexTask = Task.TaskIndex(_groups[index].Tasks, id);
-                if (indexTask != -1) _groups[index].DeleteItem(indexTask);
+                if (!index.HasValue) return;
+                var indexTask = Task.TaskIndex(_groups[index.Value].Tasks, id);
+                if (indexTask.HasValue) _groups[index.Value].DeleteItem(indexTask.Value);
             }
             else
             {
@@ -186,9 +186,9 @@ namespace MyToDoList1
                 foreach (var group in _groups)
                 {
                     var index = Task.TaskIndex(group.Tasks, id);
-                    if (index == -1) continue;
-                    var task = group.Tasks[index];
-                    if (task.Id != id) task = task.SubTasks[index];
+                    if (!index.HasValue) continue;
+                    var task = group.Tasks[index.Value];
+                    if (task.Id != id) task = task.SubTasks[index.Value];
                     task.Complete();
                 }
             }
@@ -205,9 +205,9 @@ namespace MyToDoList1
                 foreach (var group in _groups)
                 {
                     var index = Task.TaskIndex(group.Tasks, id);
-                    if (index == -1) continue;
+                    if (!index.HasValue) continue;
                     var tasks = group.Tasks; 
-                    tasks[index].SetDate(date);
+                    tasks[index.Value].SetDate(date);
                 }
             }
             else
@@ -242,9 +242,9 @@ namespace MyToDoList1
         private void DeleteGroup(string name)
         {
             var index = Group.GroupIndex(_groups, name);
-            if (index != -1)
+            if (index.HasValue)
             {
-                _groups.RemoveAt(index);
+                _groups.RemoveAt(index.Value);
             }
             else
             {
@@ -255,17 +255,18 @@ namespace MyToDoList1
         private void AddItemToGroup(string taskId, string groupName)
         {
             var indexGroup = Group.GroupIndex(_groups, groupName);
-            if (indexGroup != -1)
+            if (indexGroup.HasValue)
             {
                 if (StringParser.TryParseId(taskId, out var id))
                 {
                     var indexGroupDefault = Group.GroupIndex(_groups, "Tasks");
-                    var groupDefault = _groups[indexGroupDefault];
+                    if (!indexGroupDefault.HasValue) return;
+                    var groupDefault = _groups[indexGroupDefault.Value];
                     var index = Task.TaskIndex(groupDefault.Tasks, id);
-                    if (index != -1)
+                    if (index.HasValue)
                     {
-                        _groups[indexGroup].AddItem(groupDefault.Tasks[index]);
-                        groupDefault.Tasks.RemoveAt(index);    
+                        _groups[indexGroup.Value].AddItem(groupDefault.Tasks[index.Value]);
+                        groupDefault.Tasks.RemoveAt(index.Value);    
                     }
                     else
                     {
@@ -291,9 +292,9 @@ namespace MyToDoList1
                 if (StringParser.TryParseId(taskId, out var id))
                 {
                     var indexTask = Task.TaskIndex(@group.Tasks, id);
-                    if (indexTask != -1)
+                    if (indexTask.HasValue)
                     {
-                        @group.DeleteItem(indexTask);
+                        @group.DeleteItem(indexTask.Value);
                         // AddTask(group.Tasks[indexTask].Name);
                     }
                 }
@@ -307,10 +308,10 @@ namespace MyToDoList1
         private void GroupCompleted(string groupName)
         {
             var groupIndex = Group.GroupIndex(_groups, groupName);
-            if (groupIndex == -1) BadCommandFormat();
+            if (!groupIndex.HasValue) BadCommandFormat();
             else
             {
-                var group = _groups[groupIndex];
+                var group = _groups[groupIndex.Value];
                 TaskWriter.PrintTasks(group, true);
             }
         }
@@ -323,10 +324,10 @@ namespace MyToDoList1
                 {
                     var tasks = group.Tasks;
                     var index = Task.TaskIndex(tasks, id);
-                    if (index == -1) continue;
+                    if (!index.HasValue) continue;
                     var subId = subTaskName.GetHashCode();
                     var subTask = new Task(subTaskName, subId, 0, false);
-                    tasks[index].AddSubTask(subTask);
+                    tasks[index.Value].AddSubTask(subTask);
                 }
             }
             else
