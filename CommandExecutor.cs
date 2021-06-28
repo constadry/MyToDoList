@@ -17,83 +17,109 @@ namespace MyToDoList1
         public void SetList(StringParser stringParser)
         {
             _list = stringParser.Words;
+            switch (_list.Count)
+            {
+                case 1:
+                    switch (_list[0])
+                    {
+                        case "/all":
+                            break;
+                        case "/today":
+                            break;
+                        case "/completed":
+                            break;
+                        default:
+                            _list[0] = "";
+                            break;
+                    }
+                    break;
+                case 2:
+                    switch (_list[0])
+                    {
+                        case "/add":
+                            break;
+                        case "/delete":
+                            break;
+                        case "/save":
+                            break;
+                        case "/load":
+                            break;
+                        case "/complete":
+                            break;
+                        case "/create-group":
+                            break;
+                        case "/delete-group":
+                            break;
+                        case "/completed":
+                            break;
+                        default:
+                            _list[0] = "";
+                            break;
+                    }
+                    break;
+                case 3:
+                    switch (_list[0])
+                    {
+                        case "/add-to-group":
+                            break;
+                        case "/delete-from-group":
+                            break;
+                        case "/add-subtask":
+                            break;
+                        default:
+                            _list[0] = "";
+                            break;
+                    }
+                    break;
+            }
         }
 
         public void Execute()
         {
             switch (_list[0])
             {
-                case "/add" when _list.Count == 2:
+                case "/add":
                     AddTask(_list[1]);
                     break;
-                case "/add":
-                    BadCommandFormat();
-                    break;
-                case "/all" when _list.Count == 1:
+                case "/all":
                     TaskWriter.WriteAllTasks(_groups);
                     break;
-                case "/all":
-                    BadCommandFormat();
-                    break;
-                case "/delete" when _list.Count == 2:
+                case "/delete":
                     DeleteTask(_list[1]);
                     break;
-                case "/delete":
-                    BadCommandFormat();
-                    break;
-                case "/load" when _list.Count == 2:
+                case "/load":
                     LoadTaskFromFile(_list[1]);
                     break;
-                case "/load":
-                    BadCommandFormat();
-                    break;
-                case "/save" when _list.Count == 2:
+                case "/save":
                     FileTask.SaveTaskToFile(_list[1], _groups);
                     break;
-                case "/save":
-                    BadCommandFormat();
-                    break;
-                case "/complete" when _list.Count == 2:
+                case "/complete":
                     Complete(_list[1]);
                     break;
-                case "/complete":
-                    BadCommandFormat();
-                    break;
-                case "/time" when _list.Count == 3:
+                case "/time":
                     AddTimeLimitToTask(_list[1], _list[2]);
                     break;
-                case "/time":
-                    BadCommandFormat();
-                    break;
-                case "/today" when _list.Count == 1:
+                case "/today":
                     TasksForToday();
                     break;
-                case "/today":
-                    BadCommandFormat();
-                    break;
-                case "/create-group" when _list.Count == 2:
+                case "/create-group":
                     CreateGroup(_list[1]);
                     break;
-                case "/create-group":
-                    BadCommandFormat();
-                    break;
-                case "/delete-group" when _list.Count == 2:
+                case "/delete-group":
                     DeleteGroup(_list[1]);
                     break;
-                case "/delete-group":
-                    BadCommandFormat();
-                    break;
-                case "/add-to-group" when _list.Count == 3:
-                    AddItemToGroup(_list[1], _list[2]);
-                    break;
                 case "/add-to-group":
-                    BadCommandFormat();
-                    break;
-                case "/delete-from-group" when _list.Count == 3:
-                    DeleteItemFromGroup(_list[1], _list[2]);
+                    try
+                    {
+                        AddItemToGroup(_list[1], _list[2]);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"Error type: {e.GetType()}, error message: {e.Message}");
+                    }
                     break;
                 case "/delete-from-group":
-                    BadCommandFormat();
+                    DeleteItemFromGroup(_list[1], _list[2]);
                     break;
                 case "/completed":
                     switch (_list.Count)
@@ -108,13 +134,9 @@ namespace MyToDoList1
                             BadCommandFormat();
                             break;
                     }
-
-                    break;
-                case "/add-subtask" when _list.Count == 3:
-                    AddSubTaskToTask(_list[1], _list[2]);
                     break;
                 case "/add-subtask":
-                    BadCommandFormat();
+                    AddSubTaskToTask(_list[1], _list[2]);
                     break;
                 default:
                     BadCommandFormat();

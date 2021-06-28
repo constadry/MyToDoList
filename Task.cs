@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace MyToDoList1
@@ -73,7 +74,7 @@ namespace MyToDoList1
 
         public static void BadIndex(int id)
         {
-            Console.WriteLine($"Could not find element by id {id}");
+            throw new InvalidDataException($"Could not find element by id {id}");
         }
     }
 }
